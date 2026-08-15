@@ -4,6 +4,11 @@
   "main": "./worker.js",
   "compatibility_date": "2026-08-14",
   "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
+  "vars": {
+    "ADMIN_EMAILS": "zach@harringtonit.com,matt@allthingsdac.com",
+    "ACCESS_TEAM_DOMAIN": "https://harringtonit.cloudflareaccess.com"
+  },
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
