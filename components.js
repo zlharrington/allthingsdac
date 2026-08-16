@@ -30,6 +30,7 @@
   }
 
   function SiteHeader() {
+    const [menuOpen, setMenuOpen] = React.useState(false);
     const activePage = currentPage();
     return e(
       React.Fragment,
@@ -55,27 +56,29 @@
             'button',
             {
               className: 'mobile-toggle',
-              'aria-label': 'Open menu',
-              'aria-expanded': 'false',
-              type: 'button'
+              'aria-label': menuOpen ? 'Close menu' : 'Open menu',
+              'aria-expanded': String(menuOpen),
+              type: 'button',
+              onClick: () => setMenuOpen(open => !open)
             },
             '☰'
           ),
           e(
             'nav',
-            { className: 'nav-links', 'aria-label': 'Primary navigation' },
+            { className: `nav-links${menuOpen ? ' open' : ''}`, 'aria-label': 'Primary navigation' },
             ...navItems.map(([href, label]) =>
               e(
                 'a',
                 {
                   key: href,
                   href,
-                  'aria-current': activePage === href ? 'page' : undefined
+                  'aria-current': activePage === href ? 'page' : undefined,
+                  onClick: () => setMenuOpen(false)
                 },
                 label
               )
             ),
-            e('a', { className: 'btn btn-primary', href: 'contact.html' }, 'Request an Estimate')
+            e('a', { className: 'btn btn-primary', href: 'contact.html', onClick: () => setMenuOpen(false) }, 'Request an Estimate')
           )
         )
       )
@@ -134,9 +137,34 @@
     );
   }
 
-  const headerRoot = document.getElementById('site-header-root');
-  if (headerRoot) ReactDOM.createRoot(headerRoot).render(e(SiteHeader));
+  function mountSharedLayout() {
+    let headerRoot = document.getElementById('site-header-root');
+    if (!headerRoot) {
+      const topbar = document.querySelector('.topbar');
+      const header = document.querySelector('.site-header');
+      if (topbar && header) {
+        headerRoot = document.createElement('div');
+        headerRoot.id = 'site-header-root';
+        topbar.before(headerRoot);
+        topbar.remove();
+        header.remove();
+      }
+    }
 
-  const footerRoot = document.getElementById('site-footer-root');
-  if (footerRoot) ReactDOM.createRoot(footerRoot).render(e(SiteFooter));
+    let footerRoot = document.getElementById('site-footer-root');
+    if (!footerRoot) {
+      const footer = document.querySelector('.footer');
+      if (footer) {
+        footerRoot = document.createElement('div');
+        footerRoot.id = 'site-footer-root';
+        footer.before(footerRoot);
+        footer.remove();
+      }
+    }
+
+    if (headerRoot) ReactDOM.createRoot(headerRoot).render(e(SiteHeader));
+    if (footerRoot) ReactDOM.createRoot(footerRoot).render(e(SiteFooter));
+  }
+
+  mountSharedLayout();
 })();
