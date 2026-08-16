@@ -4,9 +4,9 @@ function wireLegacyNavigation(){const toggle=document.querySelector('.mobile-tog
 
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.crossOrigin='anonymous';script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
 
-async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18.3.1/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js');await loadScript('components.js');}catch(error){console.warn('Shared React layout could not load; using static page layout.',error);}}
+async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18.3.1/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js');await loadScript('components.js');return true;}catch(error){console.warn('Shared React components could not load; using static page layout.',error);return false;}}
 
 wireLegacyNavigation();
-mountReactLayout();
+window.allThingsReactReady=mountReactLayout();
 
 const form=document.querySelector('[data-contact-form]');if(form){form.addEventListener('submit',e=>{e.preventDefault();const data=new FormData(form);const subject=encodeURIComponent('Estimate Request — '+(data.get('name')||'Website'));const body=encodeURIComponent(`Name: ${data.get('name')||''}\nPhone: ${data.get('phone')||''}\nEmail: ${data.get('email')||''}\n\nProject details:\n${data.get('message')||''}`);window.location.href=`mailto:matt@allthingsdac.com?subject=${subject}&body=${body}`;});}
