@@ -4,7 +4,7 @@ function wireLegacyNavigation(){const toggle=document.querySelector('.mobile-tog
 
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.crossOrigin='anonymous';script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
 
-async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js');await loadScript('components.js');}catch(error){console.warn('Shared React layout could not load; using static page layout.',error);}}
+async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18.3.1/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js');await loadScript('components.js');}catch(error){console.warn('Shared React layout could not load; using static page layout.',error);}}
 
 wireLegacyNavigation();
 mountReactLayout();
