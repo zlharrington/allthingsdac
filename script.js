@@ -1,7 +1,7 @@
 const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css';document.head.appendChild(optimizationStyles);
 const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.site-header .brand-logo img{width:230px!important;max-height:72px!important;object-fit:contain}.footer-logo img{width:245px!important;max-height:88px!important;object-fit:contain}@media(max-width:560px){.site-header .brand-logo img{width:185px!important;max-height:62px!important}.footer-logo img{width:215px!important}}';document.head.appendChild(style);
 
-const approvedLogo='/assets/allthingsdac-logo-white.png?v=20260817-4';
+const approvedLogo='https://raw.githubusercontent.com/zlharrington/allthingsdac/main/assets/allthingsdac-logo-white.png?v=20260817-5';
 function applyBrandLogo(root=document){root.querySelectorAll('.brand-logo img').forEach(img=>{if(img.getAttribute('src')!==approvedLogo){img.src=approvedLogo;img.alt='All Things Drywall & Construction';img.decoding='async';}});}
 
 function closeLegacyNavigation(){const toggle=document.querySelector('.mobile-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav&&nav.classList.contains('open')){nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');}}
