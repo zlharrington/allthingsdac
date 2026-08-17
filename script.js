@@ -1,8 +1,33 @@
-const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css';document.head.appendChild(optimizationStyles);
-const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.site-header .brand-logo img{width:230px!important;max-height:72px!important;object-fit:contain}.footer-logo img{width:245px!important;max-height:88px!important;object-fit:contain}@media(max-width:560px){.site-header .brand-logo img{width:185px!important;max-height:62px!important}.footer-logo img{width:215px!important}}';document.head.appendChild(style);
+const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css?v=20260817-approved-logo';document.head.appendChild(optimizationStyles);
+const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}';document.head.appendChild(style);
 
-const approvedLogo='https://raw.githubusercontent.com/zlharrington/allthingsdac/main/assets/allthingsdac-logo-white.png?v=20260817-5';
-function applyBrandLogo(root=document){root.querySelectorAll('.brand-logo img').forEach(img=>{if(img.getAttribute('src')!==approvedLogo){img.src=approvedLogo;img.alt='All Things Drywall & Construction';img.decoding='async';}});}
+const approvedLogoParts=['/logo-data/part1.txt','/logo-data/part2.txt','/logo-data/part3.txt','/logo-data/part4.txt','/logo-data/part5.txt'];
+const transparentPixel='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+let approvedLogoPromise;
+function loadApprovedLogo(){
+  if(!approvedLogoPromise){
+    approvedLogoPromise=Promise.all(approvedLogoParts.map(async path=>{
+      const response=await fetch(path,{cache:'force-cache'});
+      if(!response.ok)throw new Error(`Logo data failed to load: ${path} (${response.status})`);
+      return (await response.text()).trim();
+    })).then(parts=>{
+      const base64=parts.join('');
+      if(base64.length!==33880)throw new Error(`Approved logo data length mismatch: ${base64.length}`);
+      const dataUrl=`data:image/png;base64,${base64}`;
+      document.documentElement.style.setProperty('--approved-logo-image',`url("${dataUrl}")`);
+      return dataUrl;
+    });
+  }
+  return approvedLogoPromise;
+}
+function applyBrandLogo(root=document){
+  root.querySelectorAll('.brand-logo img').forEach(img=>{
+    img.src=transparentPixel;
+    img.alt='All Things Drywall & Construction';
+    img.decoding='async';
+  });
+  loadApprovedLogo().catch(error=>console.error('Approved logo could not be loaded.',error));
+}
 
 function closeLegacyNavigation(){const toggle=document.querySelector('.mobile-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav&&nav.classList.contains('open')){nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');}}
 
@@ -20,7 +45,7 @@ function ensureCanonical(){if(document.querySelector('link[rel="canonical"]'))re
 
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.crossOrigin='anonymous';script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
 
-async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18.3.1/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js');await loadScript('components.js');requestAnimationFrame(()=>{applyBrandLogo();markCurrentPage();improveImages();wireRenderedNavigation();});return true;}catch(error){console.warn('Shared React components could not load; using static page layout.',error);applyBrandLogo();wireRenderedNavigation();return false;}}
+async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18.3.1/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js');await loadScript('components.js?v=20260817-approved-logo');requestAnimationFrame(()=>{applyBrandLogo();markCurrentPage();improveImages();wireRenderedNavigation();});return true;}catch(error){console.warn('Shared React components could not load; using static page layout.',error);applyBrandLogo();wireRenderedNavigation();return false;}}
 
 applyBrandLogo();wireLegacyNavigation();wireRenderedNavigation();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();window.allThingsReactReady=mountReactLayout();
 
