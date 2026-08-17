@@ -1,6 +1,6 @@
 (() => {
   const e = React.createElement;
-  const logoUrl = 'https://raw.githubusercontent.com/zlharrington/allthingsdac/main/assets/allthingsdac-logo-white.png?v=20260817-3';
+  const logoUrl = '/assets/allthingsdac-logo-white.png?v=20260817-4';
   const phoneHref = 'tel:+15093026024';
   const phoneDisplay = '509-302-6024';
   const email = 'matt@allthingsdac.com';
