@@ -1,6 +1,6 @@
 (() => {
   const e = React.createElement;
-  const logoUrl = 'https://allthingsdac.com/wp-content/uploads/elementor/thumbs/ALL-THINGS-Logo-Final-02-qgh79c2h3iokz2svfomt334bg3xy40uovp52ti7kgu.png';
+  const logoUrl = 'assets/allthingsdac-logo-white.png?v=20260817-2';
   const phoneHref = 'tel:+15093026024';
   const phoneDisplay = '509-302-6024';
   const email = 'matt@allthingsdac.com';
