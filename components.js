@@ -69,7 +69,8 @@
         e('a', { href: 'services.html' }, 'Services'), ' · ',
         e('a', { href: 'work.html' }, 'Our Work'), ' · ',
         e('a', { href: 'about.html' }, 'About'), ' · ',
-        e('a', { href: 'contact.html' }, 'Contact'),
+        e('a', { href: 'contact.html' }, 'Contact'), ' · ',
+        e('a', { href: '/admin/' }, 'Admin Login'),
         e('span', { className: 'site-credit' }, ' · Website design & development by ',
           e('a', { href: 'https://harringtonit.com', target: '_blank', rel: 'noopener noreferrer' }, 'Harrington IT')
         )
