@@ -4,19 +4,23 @@ const style=document.createElement('style');style.textContent='.site-header .bra
 const approvedLogoParts=['/logo-data/part1.txt','/logo-data/part2.txt','/logo-data/part3.txt','/logo-data/part4.txt','/logo-data/part5.txt'];
 const transparentPixel='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 let approvedLogoPromise;
+async function loadManagedLogo(){try{const response=await fetch('/api/site-content?page=global',{cache:'no-store'});if(!response.ok)return '';const data=await response.json();const url=String(data?.content?.siteLogo||'').trim();return url;}catch{return '';}}
 function loadApprovedLogo(){
   if(!approvedLogoPromise){
-    approvedLogoPromise=Promise.all(approvedLogoParts.map(async path=>{
-      const response=await fetch(path,{cache:'force-cache'});
-      if(!response.ok)throw new Error(`Logo data failed to load: ${path} (${response.status})`);
-      return (await response.text()).trim();
-    })).then(parts=>{
+    approvedLogoPromise=(async()=>{
+      const managedLogo=await loadManagedLogo();
+      if(managedLogo){document.documentElement.style.setProperty('--approved-logo-image',`url("${managedLogo}")`);return managedLogo;}
+      const parts=await Promise.all(approvedLogoParts.map(async path=>{
+        const response=await fetch(path,{cache:'force-cache'});
+        if(!response.ok)throw new Error(`Logo data failed to load: ${path} (${response.status})`);
+        return (await response.text()).trim();
+      }));
       const base64=parts.join('');
       if(base64.length!==33880)throw new Error(`Approved logo data length mismatch: ${base64.length}`);
       const dataUrl=`data:image/png;base64,${base64}`;
       document.documentElement.style.setProperty('--approved-logo-image',`url("${dataUrl}")`);
       return dataUrl;
-    });
+    })();
   }
   return approvedLogoPromise;
 }
