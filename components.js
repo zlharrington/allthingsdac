@@ -8,6 +8,7 @@
   const navItems = [
     ['services.html', 'Services'],
     ['work.html', 'Our Work'],
+    ['reviews.html', 'Reviews'],
     ['about.html', 'About'],
     ['contact.html', 'Contact']
   ];
@@ -68,6 +69,7 @@
         '© 2026 All Things Drywall & Construction, LLC. · ',
         e('a', { href: 'services.html' }, 'Services'), ' · ',
         e('a', { href: 'work.html' }, 'Our Work'), ' · ',
+        e('a', { href: 'reviews.html' }, 'Reviews'), ' · ',
         e('a', { href: 'about.html' }, 'About'), ' · ',
         e('a', { href: 'contact.html' }, 'Contact'), ' · ',
         e('a', { href: '/admin/' }, 'Admin Login'),
