@@ -44,13 +44,14 @@ function toItem(object) {
     jobType: cleanType(meta.jobType),
     projectId: meta.projectId || '',
     published: meta.published === 'true',
+    featured: meta.featured === 'true',
     createdAt: meta.createdAt || object.uploaded?.toISOString?.() || '',
     uploadedBy: meta.uploadedBy || '',
     size: object.size || 0
   };
 }
 
-async function listPhotos(bucket) {
+async function listPhotoObjects(bucket) {
   let cursor;
   const objects = [];
   do {
@@ -63,8 +64,11 @@ async function listPhotos(bucket) {
     objects.push(...page.objects);
     cursor = page.truncated ? page.cursor : undefined;
   } while (cursor);
+  return objects;
+}
 
-  return objects
+async function listPhotos(bucket) {
+  return (await listPhotoObjects(bucket))
     .sort((a, b) => String(b.customMetadata?.createdAt || '').localeCompare(String(a.customMetadata?.createdAt || '')))
     .map(toItem);
 }
@@ -75,6 +79,25 @@ async function validateProject(bucket, projectId, jobType) {
   const project = await bucket.head(`projects/${projectId}.json`);
   if (!project) return false;
   return cleanType(project.customMetadata?.jobType) === jobType;
+}
+
+async function clearFeaturedForProject(bucket, projectId, exceptKey) {
+  if (!projectId || isSiteImages(projectId)) return;
+  const objects = await listPhotoObjects(bucket);
+  const matches = objects.filter(object => {
+    const meta = object.customMetadata || {};
+    return object.key !== exceptKey && meta.projectId === projectId && meta.featured === 'true';
+  });
+
+  for (const object of matches) {
+    const existing = await bucket.get(object.key);
+    if (!existing || !('body' in existing)) continue;
+    const bytes = await existing.arrayBuffer();
+    await bucket.put(object.key, bytes, {
+      httpMetadata: existing.httpMetadata,
+      customMetadata: { ...(existing.customMetadata || {}), featured: 'false' }
+    });
+  }
 }
 
 export async function onRequestGet(context) {
@@ -125,6 +148,7 @@ export async function onRequestPost(context) {
       projectId,
       alt,
       published: String(published),
+      featured: 'false',
       createdAt,
       uploadedBy: context.data.adminEmail || ''
     }
@@ -151,6 +175,10 @@ export async function onRequestPatch(context) {
     return json({ error: 'Choose a valid project for this job type.' }, 400);
   }
 
+  const requestedFeatured = body.featured === undefined ? old.featured === 'true' : body.featured === true;
+  const featured = !siteImage && Boolean(projectId) && requestedFeatured;
+  if (featured) await clearFeaturedForProject(context.env.GALLERY_BUCKET, projectId, key);
+
   const updated = {
     ...old,
     title: clean(body.title ?? old.title, 120),
@@ -158,7 +186,8 @@ export async function onRequestPatch(context) {
     jobType,
     projectId,
     alt: clean(body.alt ?? old.alt, 180),
-    published: String(siteImage ? false : body.published === true)
+    published: String(siteImage ? false : (body.published === undefined ? old.published === 'true' : body.published === true)),
+    featured: String(featured)
   };
 
   const bytes = await existing.arrayBuffer();
