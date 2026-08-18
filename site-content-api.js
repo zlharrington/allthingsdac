@@ -1,7 +1,7 @@
-const ALLOWED_PAGES=new Set(['home','services','work','about','contact','residential','commercial','federal']);
+const ALLOWED_PAGES=new Set(['global','home','services','work','about','contact','residential','commercial','federal']);
 const IMAGE_TYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'};
 const MAX_IMAGE_BYTES=15*1024*1024;
-const SITE_IMAGE_TARGETS={home:new Set(['service1Image','service2Image','service3Image','familyImage']),about:new Set(['ownerImage','team1Image','team2Image','team3Image','team4Image'])};
+const SITE_IMAGE_TARGETS={global:new Set(['siteLogo']),home:new Set(['service1Image','service2Image','service3Image','familyImage']),about:new Set(['ownerImage','team1Image','team2Image','team3Image','team4Image'])};
 function json(data,status=200,cacheControl='no-store'){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':cacheControl}});}
 function pageFromRequest(request){const page=String(new URL(request.url).searchParams.get('page')||'').trim().toLowerCase();return ALLOWED_PAGES.has(page)?page:'';}
 function cleanContent(input){const output={};if(!input||typeof input!=='object'||Array.isArray(input))return output;for(const [key,value] of Object.entries(input).slice(0,80)){if(!/^[a-zA-Z0-9_-]{1,80}$/.test(key)||typeof value!=='string')continue;output[key]=value.trim().slice(0,6000);}return output;}
