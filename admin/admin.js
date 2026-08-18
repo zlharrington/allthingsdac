@@ -1,7 +1,8 @@
 const grid=document.getElementById('photoGrid');const statusEl=document.getElementById('status');const projectStatus=document.getElementById('projectStatus');const form=document.getElementById('uploadForm');const projectForm=document.getElementById('projectForm');const projectList=document.getElementById('projectList');const refresh=document.getElementById('refresh');const jobTypeSelect=document.getElementById('jobType');const projectSelect=document.getElementById('projectId');let projects=[];
 function setStatus(message,isError=false,target=statusEl){target.textContent=message;target.classList.toggle('error',isError);}
-async function photoApi(options={}){const response=await fetch('/api/admin/photos',options);const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||`Request failed (${response.status})`);return data;}
-async function projectApi(options={}){const response=await fetch('/api/admin/projects',options);const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||`Request failed (${response.status})`);return data;}
+async function parseResponse(response){const text=await response.text();let data={};if(text){try{data=JSON.parse(text);}catch{data={error:text.trim()};}}if(!response.ok)throw new Error(data.error||`Request failed (${response.status})`);return data;}
+async function photoApi(options={}){return parseResponse(await fetch('/api/admin/photos',options));}
+async function projectApi(options={}){return parseResponse(await fetch('/api/admin/projects',options));}
 function escapeHtml(value=''){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function labelType(type=''){return type?type.charAt(0).toUpperCase()+type.slice(1):'Unassigned';}
 function projectOptions(jobType,selected=''){const matches=projects.filter(project=>project.jobType===jobType);return `<option value="">${matches.length?'Choose project':'No projects in this job type'}</option>`+matches.map(project=>`<option value="${escapeHtml(project.id)}"${project.id===selected?' selected':''}>${escapeHtml(project.name)}</option>`).join('');}
