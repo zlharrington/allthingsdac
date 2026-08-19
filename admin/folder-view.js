@@ -1,5 +1,6 @@
 (()=>{
   const grid=document.getElementById('photoGrid');
+  const projectList=document.getElementById('projectList');
   if(!grid)return;
 
   const CATEGORY_LABELS={commercial:'Commercial',residential:'Residential',federal:'Federal','site-images':'Site Images'};
@@ -8,6 +9,7 @@
   let photos=[];
   let rebuilding=false;
   let scheduled=false;
+  let projectRefreshScheduled=false;
 
   async function getJson(url){
     const response=await fetch(url,{cache:'no-store'});
@@ -64,6 +66,7 @@
   function buildProjectFolder(project,cards){
     const items=projectPhotos(project.id);
     const node=folder(project.name,false,'project-folder');
+    node.dataset.projectId=project.id;
     setCount(node,items.length);
     if(project.description){
       const description=document.createElement('p');
@@ -157,6 +160,18 @@
     requestAnimationFrame(()=>{scheduled=false;refreshFolderData();});
   });
   observer.observe(grid,{childList:true});
+
+  if(projectList){
+    const projectObserver=new MutationObserver(()=>{
+      if(projectRefreshScheduled)return;
+      projectRefreshScheduled=true;
+      setTimeout(()=>{
+        projectRefreshScheduled=false;
+        refreshFolderData();
+      },50);
+    });
+    projectObserver.observe(projectList,{childList:true,subtree:true});
+  }
 
   document.getElementById('refresh')?.addEventListener('click',()=>setTimeout(refreshFolderData,50));
   window.addEventListener('load',()=>setTimeout(refreshFolderData,100));
