@@ -15,7 +15,7 @@ function isSiteEditorAdminPath(pathname){return pathname==='/api/admin/site-cont
 function siteImageToPhoto(object){
  const meta=object.customMetadata||{};
  const file=object.key.slice(SITE_IMAGES_PREFIX.length);
- return{key:object.key,file,url:`/site-media/${encodeURIComponent(file)}`,title:meta.title||'',alt:meta.alt||'',category:'Site Image',jobType:'',projectId:SITE_IMAGES_ID,published:false,featured:false,createdAt:meta.createdAt||object.uploaded?.toISOString?.()||'',uploadedBy:meta.uploadedBy||'',size:object.size||0};
+ return{key:object.key,file,url:`/media/site/${encodeURIComponent(file)}`,title:meta.title||'',alt:meta.alt||'',category:'Site Image',jobType:'',projectId:SITE_IMAGES_ID,published:false,featured:false,createdAt:meta.createdAt||object.uploaded?.toISOString?.()||'',uploadedBy:meta.uploadedBy||'',size:object.size||0};
 }
 
 async function listSiteImages(bucket){
@@ -90,28 +90,12 @@ async function handleAdminPhotosThroughEntry(request,env,ctx,adminUser){
  return baseWorker.fetch(request,env,ctx);
 }
 
-async function handleSiteMedia(pathname,env){
- const encoded=pathname.slice('/site-media/'.length);
- if(!encoded)return new Response('Not found',{status:404});
- let file;try{file=decodeURIComponent(encoded);}catch{return new Response('Bad request',{status:400});}
- if(!file||file.includes('/')||file.includes('..'))return new Response('Not found',{status:404});
- const object=await env.GALLERY_BUCKET.get(`${SITE_IMAGES_PREFIX}${file}`);
- if(!object)return new Response('Not found',{status:404});
- const headers=new Headers();
- object.writeHttpMetadata(headers);
- headers.set('etag',object.httpEtag);
- headers.set('cache-control','public, max-age=86400, stale-while-revalidate=604800');
- headers.set('x-content-type-options','nosniff');
- return new Response('body'in object?object.body:null,{status:'body'in object?200:412,headers});
-}
-
 export default{
  async fetch(request,env,ctx){
   const url=new URL(request.url);
   if(url.pathname==='/api/admin/owner-login')return handleOwnerLogin(request,env);
   if(url.pathname==='/api/admin/session')return handleAdminSessionInfo(request,env);
   if(url.pathname==='/api/admin/permissions')return handleClientPermissions(request,env);
-  if(url.pathname.startsWith('/site-media/')&&request.method==='GET')return handleSiteMedia(url.pathname,env);
   if(url.pathname==='/api/admin/move-site-image'){
    const galleryAccess=await authorizeAdminFeature(request,env,'gallery');
    if(galleryAccess.response)return galleryAccess.response;
