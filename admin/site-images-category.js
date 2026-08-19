@@ -35,6 +35,13 @@
     [...select.options].filter(item => item.value === SITE_IMAGES).forEach(item => item.remove());
   }
 
+  function setProjectSelectToSiteImages(select) {
+    const options = [...select.options];
+    const alreadyCorrect = options.length === 1 && options[0].value === SITE_IMAGES && select.value === SITE_IMAGES;
+    if (alreadyCorrect) return;
+    select.innerHTML = '<option value="site-images" selected>Site Images</option>';
+  }
+
   function syncUploadDestination() {
     const siteImages = categorySelect.value === SITE_IMAGES;
     if (siteImages) {
@@ -142,15 +149,15 @@
     const projectLabel = project.closest('label');
 
     if (siteImage) {
-      typeSelect.value = SITE_IMAGES;
-      project.innerHTML = '<option value="site-images" selected>Site Images</option>';
+      if (typeSelect.value !== SITE_IMAGES) typeSelect.value = SITE_IMAGES;
+      setProjectSelectToSiteImages(project);
       if (projectLabel) projectLabel.hidden = true;
-      publish.checked = false;
-      publish.disabled = true;
+      if (publish.checked) publish.checked = false;
+      if (!publish.disabled) publish.disabled = true;
     } else {
       removeSiteImagesOption(project);
       if (projectLabel) projectLabel.hidden = false;
-      publish.disabled = false;
+      if (publish.disabled) publish.disabled = false;
     }
   }
 
@@ -177,7 +184,7 @@
           const publish = card.querySelector('.edit-published');
           const projectLabel = project?.closest('label');
           if (event.target.value === SITE_IMAGES) {
-            if (project) project.innerHTML = '<option value="site-images" selected>Site Images</option>';
+            if (project) setProjectSelectToSiteImages(project);
             if (projectLabel) projectLabel.hidden = true;
             if (publish) {
               publish.checked = false;
