@@ -96,8 +96,11 @@
         body.set('file', file);
         body.set('title', title);
         body.set('alt', alt);
+        body.set('jobType', SITE_IMAGES);
+        body.set('projectId', SITE_IMAGES);
+        body.set('published', 'false');
         try {
-          await parseResponse(await fetch('/api/admin/site-images', { method: 'POST', body }));
+          await parseResponse(await fetch('/api/admin/photos', { method: 'POST', body }));
           uploaded++;
         } catch (error) {
           failed.push(`${file.name}: ${error.message}`);
