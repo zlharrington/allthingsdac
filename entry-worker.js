@@ -2,6 +2,7 @@ import baseWorker from './worker.js';
 import {handleMoveGalleryPhotoToSite} from './site-content-api.js';
 import {handleOwnerLogin,handleAdminSessionInfo,handleClientPermissions,authorizeAdminFeature} from './admin-access-api.js';
 import {handleGoogleReviews} from './google-reviews-api.js';
+import {handleAdminTheme} from './theme-api.js';
 
 const SITE_IMAGES_ID='site-images';
 const SITE_IMAGES_PREFIX='site-images/';
@@ -208,6 +209,10 @@ export default{
    const galleryAccess=await authorizeAdminFeature(request,env,'gallery');if(galleryAccess.response)return galleryAccess.response;
    const siteAccess=await authorizeAdminFeature(request,env,'siteEditor');if(siteAccess.response)return siteAccess.response;
    return handleMoveGalleryPhotoToSite(request,env,galleryAccess.session.username);
+  }
+  if(url.pathname==='/api/admin/theme'){
+   const access=await authorizeAdminFeature(request,env,'siteEditor');if(access.response)return access.response;
+   return handleAdminTheme(request,env,access.session.username);
   }
   if(isGalleryAdminPath(url.pathname)){
    const access=await authorizeAdminFeature(request,env,'gallery');if(access.response)return access.response;
