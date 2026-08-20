@@ -5,6 +5,12 @@
   X-Frame-Options: SAMEORIGIN
   Content-Security-Policy: default-src 'self'; img-src 'self' https://allthingsdac.com https://raw.githubusercontent.com data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self' mailto:; frame-ancestors 'self'; upgrade-insecure-requests
 
+/script.js
+  Cache-Control: no-cache, must-revalidate
+
+/styles.css
+  Cache-Control: no-cache, must-revalidate
+
 /site-theme.css
   Cache-Control: no-cache, must-revalidate
 
