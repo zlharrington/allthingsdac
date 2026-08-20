@@ -2,6 +2,7 @@ worker.js
 entry-worker.js
 site-content-api.js
 admin-access-api.js
+google-reviews-api.js
 wrangler.jsonc
 functions/
 README.md
