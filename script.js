@@ -1,11 +1,26 @@
 const favicon=document.createElement('link');favicon.rel='icon';favicon.type='image/svg+xml';favicon.href='/assets/favicon.svg?v=20260818';document.head.appendChild(favicon);
 const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css?v=20260817-approved-logo';document.head.appendChild(optimizationStyles);
-const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}';document.head.appendChild(style);
+const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}html:not(.dac-managed-images-ready) .brand-logo,html:not(.dac-managed-images-ready) .expertise .card img,html:not(.dac-managed-images-ready) .split>img,html:not(.dac-managed-images-ready) .team .person img{visibility:hidden!important}';document.head.appendChild(style);
 
 const approvedLogoParts=['/logo-data/part1.txt','/logo-data/part2.txt','/logo-data/part3.txt','/logo-data/part4.txt','/logo-data/part5.txt'];
 const transparentPixel='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 let approvedLogoPromise;
-async function loadManagedLogo(){try{const response=await fetch('/api/site-content?page=global',{cache:'no-store'});if(!response.ok)return '';const data=await response.json();const url=String(data?.content?.siteLogo||'').trim();return url;}catch{return '';}}
+async function loadManagedLogo(){
+  try{
+    const slotResponse=await fetch('/site-image-slots.json',{cache:'no-store'});
+    if(slotResponse.ok){
+      const slots=await slotResponse.json();
+      const githubLogo=String(slots?.['global.siteLogo']||'').trim();
+      if(githubLogo)return githubLogo;
+    }
+  }catch{}
+  try{
+    const response=await fetch('/api/site-content?page=global',{cache:'no-store'});
+    if(!response.ok)return '';
+    const data=await response.json();
+    return String(data?.content?.siteLogo||'').trim();
+  }catch{return '';}
+}
 function loadApprovedLogo(){
   if(!approvedLogoPromise){
     approvedLogoPromise=(async()=>{
@@ -52,7 +67,18 @@ function loadScript(src){return new Promise((resolve,reject)=>{const script=docu
 
 async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18.3.1/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js');await loadScript('components.js?v=20260820-admin-login');requestAnimationFrame(()=>{applyBrandLogo();markCurrentPage();improveImages();wireRenderedNavigation();});return true;}catch(error){console.warn('Shared React components could not load; using static page layout.',error);applyBrandLogo();wireRenderedNavigation();return false;}}
 
-async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-static-first-paint');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-static-first-paint');}catch(error){console.warn('Managed page content could not load.',error);}}
+async function loadManagedPageLayers(){
+  try{
+    await loadScript('site-content.js?v=20260820-static-first-paint');
+    if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;
+    await loadScript('site-images.js?v=20260820-no-image-flash');
+    await loadApprovedLogo();
+  }catch(error){
+    console.warn('Managed page content could not load.',error);
+  }finally{
+    document.documentElement.classList.add('dac-managed-images-ready');
+  }
+}
 
 applyBrandLogo();wireLegacyNavigation();wireRenderedNavigation();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();window.allThingsReactReady=mountReactLayout();
 
