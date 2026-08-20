@@ -8,7 +8,6 @@ const destinations=[
  {page:'home',field:'service3Image',label:'Home — Residential service image'},
  {page:'home',field:'familyImage',label:'Home — Family / owner image'},
  {page:'about',field:'ownerImage',label:'About — Matthew Peters owner photo'},
- {page:'about',field:'team1Image',label:'About — Matthew Peters team photo'},
  {page:'about',field:'team2Image',label:'About — David Peters photo'},
  {page:'about',field:'team3Image',label:'About — Caleb Peters photo'},
  {page:'about',field:'team4Image',label:'About — Jonathan Peters photo'}
