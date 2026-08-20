@@ -1,6 +1,6 @@
 const favicon=document.createElement('link');favicon.rel='icon';favicon.type='image/svg+xml';favicon.href='/assets/favicon.svg?v=20260818';document.head.appendChild(favicon);
 const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css?v=20260820-static';document.head.appendChild(optimizationStyles);
-const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}html:not(.dac-managed-images-ready) .expertise .card img,html:not(.dac-managed-images-ready) .split>img{visibility:hidden!important}';document.head.appendChild(style);
+const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}html:not(.dac-managed-images-ready) .brand-logo,html:not(.dac-managed-images-ready) .expertise .card img,html:not(.dac-managed-images-ready) .split>img{visibility:hidden!important}';document.head.appendChild(style);
 
 const STATIC_LOGO='/assets/allthingsdac-logo-white.png';
 function applyBrandLogo(root=document){root.querySelectorAll('.brand-logo img').forEach(img=>{img.src=STATIC_LOGO;img.alt='All Things Drywall & Construction';img.decoding='async';});}
@@ -13,7 +13,7 @@ function addMobileActionBar(){if(document.querySelector('.mobile-action-bar'))re
 function improveImages(root=document){root.querySelectorAll('img').forEach((img,index)=>{img.decoding='async';if(index>0&&!img.closest('.hero'))img.loading='lazy';});}
 function ensureCanonical(){if(document.querySelector('link[rel="canonical"]'))return;const canonical=document.createElement('link');canonical.rel='canonical';canonical.href=window.location.origin+(window.location.pathname.endsWith('index.html')?'/':window.location.pathname);document.head.appendChild(canonical);}
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
-async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-optimized');}catch(error){console.warn('Managed page content could not load.',error);}finally{document.documentElement.classList.add('dac-managed-images-ready');}}
+async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-optimized-2');}catch(error){console.warn('Managed page content could not load.',error);}finally{document.documentElement.classList.add('dac-managed-images-ready');}}
 
 applyBrandLogo();wireLegacyNavigation();wireRenderedNavigation();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();
 
