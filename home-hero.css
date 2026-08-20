@@ -1,2 +1,2 @@
 /* data-site-image-slot:home.heroBackground */
-.hero{background:linear-gradient(90deg,var(--theme-header-background,#d1dfef) 0%,color-mix(in srgb,var(--theme-header-background,#d1dfef) 72%,transparent) 38%,color-mix(in srgb,var(--theme-header-background,#d1dfef) 34%,transparent) 70%,transparent 100%),url('/assets/site/home-hero-background.jpg') center/cover no-repeat}
+.hero{background:linear-gradient(100deg,var(--theme-header-background,#50697a) 0%,color-mix(in srgb,var(--theme-header-background,#50697a) 88%,white 12%) 18%,color-mix(in srgb,var(--theme-header-background,#50697a) 62%,transparent) 48%,color-mix(in srgb,var(--theme-header-background,#50697a) 24%,transparent) 74%,transparent 100%),url('/assets/site/home-hero-background.jpg') center/cover no-repeat}
