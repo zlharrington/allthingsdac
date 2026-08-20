@@ -6,7 +6,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
   "vars": {
-    "CLIENT_ADMIN_USERNAME": "matt"
+    "CLIENT_ADMIN_USERNAME": "matt",
+    "GITHUB_SITE_IMAGES_OWNER": "zlharrington",
+    "GITHUB_SITE_IMAGES_REPO": "allthingsdac",
+    "GITHUB_SITE_IMAGES_BRANCH": "main"
   },
   "assets": {
     "directory": ".",
