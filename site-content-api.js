@@ -13,6 +13,17 @@ const SITE_IMAGE_SLOT_SLUGS={
  'about.calebImage':'about-caleb',
  'about.jonathanImage':'about-jonathan'
 };
+const SITE_IMAGE_PAGE_FILES={home:'index.html',about:'about.html'};
+const LEGACY_R2_IMAGE_KEYS={
+ 'home.service1Image':'service1Image',
+ 'home.service2Image':'service2Image',
+ 'home.service3Image':'service3Image',
+ 'home.familyImage':'familyImage',
+ 'about.ownerImage':'ownerImage',
+ 'about.davidImage':'team2Image',
+ 'about.calebImage':'team3Image',
+ 'about.jonathanImage':'team4Image'
+};
 const ASSIGNABLE_SOURCE_PREFIXES=['gallery/','commercial/','residential/','federal/','site-images/'];
 const GITHUB_MANIFEST_PATH='site-image-slots.json';
 function json(data,status=200,cacheControl='no-store'){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':cacheControl}});}
@@ -33,24 +44,41 @@ async function githubApi(env,path,{method='GET',body}={}){
 async function readGithubManifest(env,branch){
  try{const file=await githubApi(env,`/contents/${GITHUB_MANIFEST_PATH}?ref=${encodeURIComponent(branch)}`);return JSON.parse(base64ToText(file.content||''))||{};}catch(error){if(error.status===404)return{};throw error;}
 }
-async function commitAssignedImageToGithub(env,{bytes,contentType,page,field,adminUser}){
- const cfg=githubConfig(env);const ext=IMAGE_TYPES[contentType];const slotKey=`${page}.${field}`;const slug=SITE_IMAGE_SLOT_SLUGS[slotKey];
+async function readGithubTextFile(env,path,branch){const file=await githubApi(env,`/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`);return base64ToText(file.content||'');}
+function replaceHtmlSlotSource(html,slotKey,url){
+ const marker=`data-site-image-slot="${slotKey}"`;const markerIndex=html.indexOf(marker);
+ if(markerIndex<0)throw Object.assign(new Error(`Page markup is missing the ${slotKey} image slot.`),{status:500});
+ const tagStart=html.lastIndexOf('<img',markerIndex),tagEnd=html.indexOf('>',markerIndex);
+ if(tagStart<0||tagEnd<0)throw Object.assign(new Error(`Page markup for ${slotKey} is invalid.`),{status:500});
+ const tag=html.slice(tagStart,tagEnd+1);
+ if(!/\bsrc=["'][^"']*["']/i.test(tag))throw Object.assign(new Error(`Page image slot ${slotKey} has no src attribute.`),{status:500});
+ const updatedTag=tag.replace(/\bsrc=["'][^"']*["']/i,`src="${url}"`);
+ return html.slice(0,tagStart)+updatedTag+html.slice(tagEnd+1);
+}
+async function commitAssignedImageAttempt(env,{bytes,contentType,page,field,adminUser}){
+ const cfg=githubConfig(env),ext=IMAGE_TYPES[contentType],slotKey=`${page}.${field}`,slug=SITE_IMAGE_SLOT_SLUGS[slotKey];
  if(!ext||!slug)throw Object.assign(new Error('Invalid GitHub site-image slot.'),{status:400});
- const assetPath=`assets/site/${slug}.${ext}`;const publicUrl=`/${assetPath}`;
- const ref=await githubApi(env,`/git/ref/heads/${cfg.branch}`);const parentSha=ref.object?.sha;if(!parentSha)throw new Error('GitHub branch reference could not be resolved.');
- const parentCommit=await githubApi(env,`/git/commits/${parentSha}`);const baseTree=parentCommit.tree?.sha;if(!baseTree)throw new Error('GitHub base tree could not be resolved.');
+ const assetPath=`assets/site/${slug}.${ext}`,publicUrl=`/${assetPath}`,pageFile=SITE_IMAGE_PAGE_FILES[page]||'';
+ const ref=await githubApi(env,`/git/ref/heads/${cfg.branch}`),parentSha=ref.object?.sha;if(!parentSha)throw new Error('GitHub branch reference could not be resolved.');
+ const parentCommit=await githubApi(env,`/git/commits/${parentSha}`),baseTree=parentCommit.tree?.sha;if(!baseTree)throw new Error('GitHub base tree could not be resolved.');
  const manifest=await readGithubManifest(env,cfg.branch);manifest[slotKey]=publicUrl;
- const [imageBlob,manifestBlob]=await Promise.all([
+ let updatedHtml='';if(pageFile){const html=await readGithubTextFile(env,pageFile,cfg.branch);updatedHtml=replaceHtmlSlotSource(html,slotKey,publicUrl);}
+ const blobPromises=[
   githubApi(env,'/git/blobs',{method:'POST',body:{content:bytesToBase64(bytes),encoding:'base64'}}),
   githubApi(env,'/git/blobs',{method:'POST',body:{content:JSON.stringify(manifest,null,2)+'\n',encoding:'utf-8'}})
- ]);
- const tree=await githubApi(env,'/git/trees',{method:'POST',body:{base_tree:baseTree,tree:[{path:assetPath,mode:'100644',type:'blob',sha:imageBlob.sha},{path:GITHUB_MANIFEST_PATH,mode:'100644',type:'blob',sha:manifestBlob.sha}]}});
+ ];
+ if(pageFile)blobPromises.push(githubApi(env,'/git/blobs',{method:'POST',body:{content:updatedHtml,encoding:'utf-8'}}));
+ const blobs=await Promise.all(blobPromises),treeEntries=[{path:assetPath,mode:'100644',type:'blob',sha:blobs[0].sha},{path:GITHUB_MANIFEST_PATH,mode:'100644',type:'blob',sha:blobs[1].sha}];
+ if(pageFile)treeEntries.push({path:pageFile,mode:'100644',type:'blob',sha:blobs[2].sha});
+ const tree=await githubApi(env,'/git/trees',{method:'POST',body:{base_tree:baseTree,tree:treeEntries}});
  const commit=await githubApi(env,'/git/commits',{method:'POST',body:{message:`Assign ${slotKey} site image`,tree:tree.sha,parents:[parentSha],author:{name:String(adminUser||'All Things DAC Admin').slice(0,80),email:'site-admin@allthingsdac.com'}}});
  await githubApi(env,`/git/refs/heads/${cfg.branch}`,{method:'PATCH',body:{sha:commit.sha,force:false}});
- return{url:publicUrl,commitSha:commit.sha,assetPath,slotKey};
+ return{url:publicUrl,commitSha:commit.sha,assetPath,slotKey,pageFile};
 }
+async function commitAssignedImageToGithub(env,args){let lastError;for(let attempt=0;attempt<3;attempt++){try{return await commitAssignedImageAttempt(env,args);}catch(error){lastError=error;if(error.status!==409||attempt===2)throw error;await new Promise(resolve=>setTimeout(resolve,120*(attempt+1)));}}throw lastError;}
 async function readPageContent(env,page){const object=await env.GALLERY_BUCKET.get(`site-content/${page}.json`);if(!object)return{};try{return JSON.parse(await object.text())||{};}catch{return{};}}
 async function writePageContent(env,page,content,adminUser){const updatedAt=new Date().toISOString();await env.GALLERY_BUCKET.put(`site-content/${page}.json`,JSON.stringify(cleanContent(content)),{httpMetadata:{contentType:'application/json; charset=utf-8',cacheControl:'no-store'},customMetadata:{page,updatedAt,updatedBy:String(adminUser||'client').slice(0,80)}});return updatedAt;}
+async function clearLegacyImageOverride(env,page,field,adminUser){const legacyKey=LEGACY_R2_IMAGE_KEYS[`${page}.${field}`];if(!legacyKey)return;const content=await readPageContent(env,page);if(!Object.prototype.hasOwnProperty.call(content,legacyKey))return;delete content[legacyKey];await writePageContent(env,page,content,adminUser);}
 export async function handlePublicSiteContent(request,env){const page=pageFromRequest(request);if(!page)return json({error:'Unknown page.'},400);return json({page,content:await readPageContent(env,page)},200,'public, max-age=30');}
 export async function handleAdminSiteContent(request,env,adminUser){const page=pageFromRequest(request);if(!page)return json({error:'Unknown page.'},400);const key=`site-content/${page}.json`;if(request.method==='GET')return json({page,content:await readPageContent(env,page)});if(request.method==='PUT'){let body;try{body=await request.json();}catch{return json({error:'Invalid page content.'},400);}const content=cleanContent(body.content);const updatedAt=await writePageContent(env,page,content,adminUser);return json({page,content,updatedAt});}if(request.method==='DELETE'){await env.GALLERY_BUCKET.delete(key);return json({ok:true,page});}return new Response('Method not allowed',{status:405,headers:{allow:'GET, PUT, DELETE'}});}
 export async function handleAdminSiteImage(request,env,adminUser){if(request.method!=='POST')return new Response('Method not allowed',{status:405,headers:{allow:'POST'}});const form=await request.formData();const file=form.get('file');const page=String(form.get('page')||'').trim().toLowerCase();const field=String(form.get('field')||'').trim();if(!ALLOWED_PAGES.has(page)||!/^[a-zA-Z0-9_-]{1,80}$/.test(field))return json({error:'Invalid page image target.'},400);if(!file||typeof file.stream!=='function')return json({error:'Choose an image to upload.'},400);const ext=IMAGE_TYPES[file.type];if(!ext)return json({error:'Use JPG, PNG, WebP, or AVIF images.'},400);if(file.size>MAX_IMAGE_BYTES)return json({error:'Images must be 15 MB or smaller.'},413);const fileName=`${page}-${field}-${Date.now()}-${crypto.randomUUID()}.${ext}`;await env.GALLERY_BUCKET.put(`site-assets/${fileName}`,file.stream(),{httpMetadata:{contentType:file.type,cacheControl:'public, max-age=31536000, immutable'},customMetadata:{page,field,uploadedAt:new Date().toISOString(),uploadedBy:String(adminUser||'client').slice(0,80)}});return json({url:`/media/site/${encodeURIComponent(fileName)}`},201);}
@@ -63,6 +91,6 @@ export async function handleMoveGalleryPhotoToSite(request,env,adminUser){
  const source=await env.GALLERY_BUCKET.get(key);if(!source)return json({error:'Photo not found.'},404);
  const contentType=source.httpMetadata?.contentType||'';if(!IMAGE_TYPES[contentType])return json({error:'This image type cannot be used as a site image.'},400);
  const bytes=await source.arrayBuffer();
- try{const assigned=await commitAssignedImageToGithub(env,{bytes,contentType,page,field,adminUser});return json({ok:true,page,field,url:assigned.url,sourceKey:key,commitSha:assigned.commitSha,storage:'github'});}catch(error){return json({error:error.message||'GitHub assignment failed.'},error.status>=400&&error.status<600?error.status:502);}
+ try{const assigned=await commitAssignedImageToGithub(env,{bytes,contentType,page,field,adminUser});await clearLegacyImageOverride(env,page,field,adminUser);return json({ok:true,page,field,url:assigned.url,sourceKey:key,commitSha:assigned.commitSha,storage:'github',pageFile:assigned.pageFile||null});}catch(error){return json({error:error.message||'GitHub assignment failed.'},error.status>=400&&error.status<600?error.status:502);}
 }
 export async function handleSiteMedia(pathname,env){const encoded=pathname.slice('/media/site/'.length);if(!encoded)return new Response('Not found',{status:404});let file;try{file=decodeURIComponent(encoded);}catch{return new Response('Bad request',{status:400});}if(!file||file.includes('/')||file.includes('..'))return new Response('Not found',{status:404});let object=await env.GALLERY_BUCKET.get(`site-assets/${file}`);if(!object)object=await env.GALLERY_BUCKET.get(`site-images/${file}`);if(!object)return new Response('Not found',{status:404});const headers=new Headers();object.writeHttpMetadata(headers);headers.set('etag',object.httpEtag);headers.set('cache-control','public, max-age=31536000, immutable');headers.set('x-content-type-options','nosniff');return new Response(object.body,{headers});}
