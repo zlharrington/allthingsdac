@@ -56,11 +56,15 @@ const pages={
   {key:'ownerText1',label:'Owner description 1',selector:'section .split > div > p:nth-of-type(1)',group:'Owner',multiline:true},
   {key:'ownerText2',label:'Owner description 2',selector:'section .split > div > p:nth-of-type(2)',group:'Owner',multiline:true},
   {key:'ownerText3',label:'Owner description 3',selector:'section .split > div > p:nth-of-type(3)',group:'Owner',multiline:true},
-  ...[2,3,4].flatMap((n)=>[
-   {key:`team${n}Image`,label:`Team member ${n} photo`,selector:`.team .person:nth-child(${n-1}) img`,group:'Team',type:'image'},
-   {key:`team${n}Name`,label:`Team member ${n} name`,selector:`.team .person:nth-child(${n-1}) h3`,group:'Team'},
-   {key:`team${n}Text`,label:`Team member ${n} description`,selector:`.team .person:nth-child(${n-1}) p`,group:'Team',multiline:true}
-  ]),
+  {key:'team2Image',label:'David Peters photo',selector:'.team .person:nth-child(1) img',group:'Team',type:'image'},
+  {key:'team2Name',label:'David Peters name',selector:'.team .person:nth-child(1) h3',group:'Team'},
+  {key:'team2Text',label:'David Peters description',selector:'.team .person:nth-child(1) p',group:'Team',multiline:true},
+  {key:'team3Image',label:'Caleb Peters photo',selector:'.team .person:nth-child(2) img',group:'Team',type:'image'},
+  {key:'team3Name',label:'Caleb Peters name',selector:'.team .person:nth-child(2) h3',group:'Team'},
+  {key:'team3Text',label:'Caleb Peters description',selector:'.team .person:nth-child(2) p',group:'Team',multiline:true},
+  {key:'team4Image',label:'Jonathan Peters photo',selector:'.team .person:nth-child(3) img',group:'Team',type:'image'},
+  {key:'team4Name',label:'Jonathan Peters name',selector:'.team .person:nth-child(3) h3',group:'Team'},
+  {key:'team4Text',label:'Jonathan Peters description',selector:'.team .person:nth-child(3) p',group:'Team',multiline:true},
   {key:'ctaHeading',label:'CTA heading',selector:'.cta h2',group:'Bottom call to action'},
   {key:'ctaText',label:'CTA description',selector:'.cta p',group:'Bottom call to action',multiline:true}
  ]},
