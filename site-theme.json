@@ -1,12 +1,12 @@
 {
-  "topbarBackground": "#8c9db1",
-  "headerBackground": "#9db1c8",
-  "primaryButton": "#a9462c",
-  "primaryButtonHover": "#7e321f",
-  "ctaBackground": "#24372d",
-  "footerBackground": "#111512",
-  "pageBannerBackground": "#f4f5f3",
-  "pageBackground": "#ffffff",
-  "textColor": "#171a1d",
-  "mutedTextColor": "#667078"
+  "topbarBackground": "#5f7484",
+  "headerBackground": "#50697a",
+  "primaryButton": "#a85f48",
+  "primaryButtonHover": "#7f4634",
+  "ctaBackground": "#536e7d",
+  "footerBackground": "#2e434f",
+  "pageBannerBackground": "#e8f0f4",
+  "pageBackground": "#f8fbfc",
+  "textColor": "#20303a",
+  "mutedTextColor": "#5b6c76"
 }
