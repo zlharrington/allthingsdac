@@ -1,6 +1,7 @@
 import baseWorker from './worker.js';
 import {handleMoveGalleryPhotoToSite} from './site-content-api.js';
 import {handleOwnerLogin,handleAdminSessionInfo,handleClientPermissions,authorizeAdminFeature} from './admin-access-api.js';
+import {handleGoogleReviews} from './google-reviews-api.js';
 
 const SITE_IMAGES_ID='site-images';
 const SITE_IMAGES_PREFIX='site-images/';
@@ -196,6 +197,7 @@ async function guardProjectDelete(request,env){
 export default{
  async fetch(request,env,ctx){
   const url=new URL(request.url);
+  if(url.pathname==='/api/google-reviews'&&request.method==='GET')return handleGoogleReviews(request,env);
   if(url.pathname==='/api/admin/owner-login')return handleOwnerLogin(request,env);
   if(url.pathname==='/api/admin/session')return handleAdminSessionInfo(request,env);
   if(url.pathname==='/api/admin/permissions')return handleClientPermissions(request,env);
