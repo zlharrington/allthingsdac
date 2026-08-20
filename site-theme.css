@@ -21,7 +21,8 @@
 }
 body{background:var(--theme-page-background);color:var(--theme-text-color)}
 .topbar{background:var(--theme-topbar-background)}
-.site-header{background:color-mix(in srgb,var(--theme-header-background) 97%,transparent)}
+.site-header{background:var(--theme-header-background)}
+@media(max-width:850px){.nav-links{background:var(--theme-header-background)}}
 .btn-primary,.mobile-action-estimate{background:var(--theme-primary-button);border-color:var(--theme-primary-button)}
 .btn-primary:hover,.btn-primary:focus-visible,.mobile-action-estimate:hover,.mobile-action-estimate:focus-visible{background:var(--theme-primary-button-hover);border-color:var(--theme-primary-button-hover)}
 .cta,.trust-strip{background:var(--theme-cta-background)}
