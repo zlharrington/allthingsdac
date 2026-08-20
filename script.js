@@ -1,9 +1,53 @@
 const favicon=document.createElement('link');favicon.rel='icon';favicon.type='image/svg+xml';favicon.href='/assets/favicon.svg?v=20260818';document.head.appendChild(favicon);
-const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css?v=20260820-static';document.head.appendChild(optimizationStyles);
+const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css?v=20260820-approved-logo-restored';document.head.appendChild(optimizationStyles);
 const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}html:not(.dac-managed-images-ready) .brand-logo,html:not(.dac-managed-images-ready) .expertise .card img,html:not(.dac-managed-images-ready) .split>img{visibility:hidden!important}';document.head.appendChild(style);
 
-const STATIC_LOGO='/assets/allthingsdac-logo-white.png';
-function applyBrandLogo(root=document){root.querySelectorAll('.brand-logo img').forEach(img=>{img.src=STATIC_LOGO;img.alt='All Things Drywall & Construction';img.decoding='async';});}
+const approvedLogoParts=['/logo-data/part1.txt','/logo-data/part2.txt','/logo-data/part3.txt','/logo-data/part4.txt','/logo-data/part5.txt'];
+const transparentPixel='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+let approvedLogoPromise;
+async function loadManagedLogo(){
+  try{
+    const slotResponse=await fetch('/site-image-slots.json',{cache:'no-store'});
+    if(slotResponse.ok){
+      const slots=await slotResponse.json();
+      const githubLogo=String(slots?.['global.siteLogo']||'').trim();
+      if(githubLogo)return githubLogo;
+    }
+  }catch{}
+  try{
+    const response=await fetch('/api/site-content?page=global',{cache:'no-store'});
+    if(!response.ok)return '';
+    const data=await response.json();
+    return String(data?.content?.siteLogo||'').trim();
+  }catch{return '';}
+}
+function loadApprovedLogo(){
+  if(!approvedLogoPromise){
+    approvedLogoPromise=(async()=>{
+      const managedLogo=await loadManagedLogo();
+      if(managedLogo){document.documentElement.style.setProperty('--approved-logo-image',`url("${managedLogo}")`);return managedLogo;}
+      const parts=await Promise.all(approvedLogoParts.map(async path=>{
+        const response=await fetch(path,{cache:'force-cache'});
+        if(!response.ok)throw new Error(`Logo data failed to load: ${path} (${response.status})`);
+        return (await response.text()).trim();
+      }));
+      const base64=parts.join('');
+      if(base64.length!==33880)throw new Error(`Approved logo data length mismatch: ${base64.length}`);
+      const dataUrl=`data:image/png;base64,${base64}`;
+      document.documentElement.style.setProperty('--approved-logo-image',`url("${dataUrl}")`);
+      return dataUrl;
+    })();
+  }
+  return approvedLogoPromise;
+}
+function applyBrandLogo(root=document){
+  root.querySelectorAll('.brand-logo img').forEach(img=>{
+    img.src=transparentPixel;
+    img.alt='All Things Drywall & Construction';
+    img.decoding='async';
+  });
+  loadApprovedLogo().catch(error=>console.error('Approved logo could not be loaded.',error));
+}
 
 function closeLegacyNavigation(){const toggle=document.querySelector('.mobile-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav&&nav.classList.contains('open')){nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');}}
 function wireLegacyNavigation(){const toggle=document.querySelector('.mobile-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav){toggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Close menu':'Open menu');});document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',closeLegacyNavigation));}}
@@ -13,7 +57,7 @@ function addMobileActionBar(){if(document.querySelector('.mobile-action-bar'))re
 function improveImages(root=document){root.querySelectorAll('img').forEach((img,index)=>{img.decoding='async';if(index>0&&!img.closest('.hero'))img.loading='lazy';});}
 function ensureCanonical(){if(document.querySelector('link[rel="canonical"]'))return;const canonical=document.createElement('link');canonical.rel='canonical';canonical.href=window.location.origin+(window.location.pathname.endsWith('index.html')?'/':window.location.pathname);document.head.appendChild(canonical);}
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
-async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-optimized-2');}catch(error){console.warn('Managed page content could not load.',error);}finally{document.documentElement.classList.add('dac-managed-images-ready');}}
+async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-optimized-2');await loadApprovedLogo();}catch(error){console.warn('Managed page content could not load.',error);}finally{document.documentElement.classList.add('dac-managed-images-ready');}}
 
 applyBrandLogo();wireLegacyNavigation();wireRenderedNavigation();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();
 
