@@ -1,0 +1,30 @@
+/* Managed by the admin Site Theme / Color Manager. */
+:root{
+  --theme-topbar-background:#24372d;
+  --theme-header-background:#151a17;
+  --theme-primary-button:#a9462c;
+  --theme-primary-button-hover:#7e321f;
+  --theme-cta-background:#24372d;
+  --theme-footer-background:#111512;
+  --theme-page-banner-background:#f4f5f3;
+  --theme-page-background:#ffffff;
+  --theme-text-color:#171a1d;
+  --theme-muted-text-color:#667078;
+  --accent:var(--theme-primary-button);
+  --accent-dark:var(--theme-primary-button-hover);
+  --forest:var(--theme-topbar-background);
+  --header:var(--theme-header-background);
+  --paper:var(--theme-page-background);
+  --ink:var(--theme-text-color);
+  --muted:var(--theme-muted-text-color);
+  --soft:var(--theme-page-banner-background);
+}
+body{background:var(--theme-page-background);color:var(--theme-text-color)}
+.topbar{background:var(--theme-topbar-background)}
+.site-header{background:color-mix(in srgb,var(--theme-header-background) 97%,transparent)}
+.btn-primary,.mobile-action-estimate{background:var(--theme-primary-button);border-color:var(--theme-primary-button)}
+.btn-primary:hover,.btn-primary:focus-visible,.mobile-action-estimate:hover,.mobile-action-estimate:focus-visible{background:var(--theme-primary-button-hover);border-color:var(--theme-primary-button-hover)}
+.cta,.trust-strip{background:var(--theme-cta-background)}
+.footer{background:var(--theme-footer-background)}
+.page-hero{background:var(--theme-page-banner-background)}
+.section-head p,.card p,.split p,.service-feature p,.project-card p,.person p,.stat span,.photo-note,.page-hero p{color:var(--theme-muted-text-color)}
