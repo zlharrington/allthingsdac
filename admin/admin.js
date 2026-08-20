@@ -145,7 +145,6 @@ function photoCard(photo) {
       <div class="admin-card-body">
         <label>Photo label<input class="edit-title" maxlength="120" value="${escapeHtml(photo.title)}"></label>
         <label>Job type<select class="edit-job-type">
-          <option value="">Unassigned</option>
           ${['commercial', 'residential', 'federal'].map(v => `<option value="${v}"${jobType === v ? ' selected' : ''}>${labelType(v)}</option>`).join('')}
         </select></label>
         <label>Project<select class="edit-project">${projectOptions(jobType, photo.projectId || '')}</select></label>
@@ -407,8 +406,8 @@ grid.addEventListener('click', async event => {
     const jobType = siteImage ? '' : card.querySelector('.edit-job-type').value;
     const projectId = selectedProjectId;
 
-    if (!siteImage && ((jobType && !projectId) || (!jobType && projectId))) {
-      setStatus('Choose both a job type and project, choose Site Images, or leave both unassigned.', true);
+    if (!siteImage && (!jobType || !projectId)) {
+      setStatus('Choose both a job type and project, or choose Site Images.', true);
       return;
     }
 
@@ -427,7 +426,7 @@ grid.addEventListener('click', async event => {
         })
       });
       setStatus('Saved.');
-      if (siteImage) await loadPhotos();
+      await loadPhotos();
     } catch (error) {
       setStatus(error.message, true);
     }
