@@ -56,10 +56,10 @@ const pages={
   {key:'ownerText1',label:'Owner description 1',selector:'section .split > div > p:nth-of-type(1)',group:'Owner',multiline:true},
   {key:'ownerText2',label:'Owner description 2',selector:'section .split > div > p:nth-of-type(2)',group:'Owner',multiline:true},
   {key:'ownerText3',label:'Owner description 3',selector:'section .split > div > p:nth-of-type(3)',group:'Owner',multiline:true},
-  ...[1,2,3,4].flatMap((n)=>[
-   {key:`team${n}Image`,label:`Team member ${n} photo`,selector:`.team .person:nth-child(${n}) img`,group:'Team',type:'image'},
-   {key:`team${n}Name`,label:`Team member ${n} name`,selector:`.team .person:nth-child(${n}) h3`,group:'Team'},
-   {key:`team${n}Text`,label:`Team member ${n} description`,selector:`.team .person:nth-child(${n}) p`,group:'Team',multiline:true}
+  ...[2,3,4].flatMap((n)=>[
+   {key:`team${n}Image`,label:`Team member ${n} photo`,selector:`.team .person:nth-child(${n-1}) img`,group:'Team',type:'image'},
+   {key:`team${n}Name`,label:`Team member ${n} name`,selector:`.team .person:nth-child(${n-1}) h3`,group:'Team'},
+   {key:`team${n}Text`,label:`Team member ${n} description`,selector:`.team .person:nth-child(${n-1}) p`,group:'Team',multiline:true}
   ]),
   {key:'ctaHeading',label:'CTA heading',selector:'.cta h2',group:'Bottom call to action'},
   {key:'ctaText',label:'CTA description',selector:'.cta p',group:'Bottom call to action',multiline:true}
