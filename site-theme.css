@@ -1,15 +1,15 @@
 /* Managed by the admin Site Theme / Color Manager. */
 :root{
-  --theme-topbar-background:#8c9db1;
-  --theme-header-background:#9db1c8;
-  --theme-primary-button:#a9462c;
-  --theme-primary-button-hover:#7e321f;
-  --theme-cta-background:#24372d;
-  --theme-footer-background:#111512;
-  --theme-page-banner-background:#f4f5f3;
-  --theme-page-background:#ffffff;
-  --theme-text-color:#171a1d;
-  --theme-muted-text-color:#667078;
+  --theme-topbar-background:#5f7484;
+  --theme-header-background:#50697a;
+  --theme-primary-button:#a85f48;
+  --theme-primary-button-hover:#7f4634;
+  --theme-cta-background:#536e7d;
+  --theme-footer-background:#2e434f;
+  --theme-page-banner-background:#e8f0f4;
+  --theme-page-background:#f8fbfc;
+  --theme-text-color:#20303a;
+  --theme-muted-text-color:#5b6c76;
   --accent:var(--theme-primary-button);
   --accent-dark:var(--theme-primary-button-hover);
   --forest:var(--theme-topbar-background);
@@ -20,12 +20,12 @@
   --soft:var(--theme-page-banner-background);
 }
 body{background:var(--theme-page-background);color:var(--theme-text-color)}
-.topbar{background:var(--theme-topbar-background)}
-.site-header{background:var(--theme-header-background)}
+.topbar{background:linear-gradient(90deg,var(--theme-topbar-background),color-mix(in srgb,var(--theme-topbar-background) 88%,white 12%))}
+.site-header{background:linear-gradient(90deg,var(--theme-header-background),color-mix(in srgb,var(--theme-header-background) 92%,black 8%))}
 @media(max-width:850px){.nav-links{background:var(--theme-header-background)}}
 .btn-primary,.mobile-action-estimate{background:var(--theme-primary-button);border-color:var(--theme-primary-button)}
 .btn-primary:hover,.btn-primary:focus-visible,.mobile-action-estimate:hover,.mobile-action-estimate:focus-visible{background:var(--theme-primary-button-hover);border-color:var(--theme-primary-button-hover)}
-.cta,.trust-strip{background:var(--theme-cta-background)}
-.footer{background:var(--theme-footer-background)}
-.page-hero{background:var(--theme-page-banner-background)}
+.cta,.trust-strip{background:linear-gradient(120deg,var(--theme-cta-background),color-mix(in srgb,var(--theme-cta-background) 82%,var(--theme-header-background) 18%))}
+.footer{background:linear-gradient(135deg,var(--theme-footer-background),color-mix(in srgb,var(--theme-footer-background) 88%,var(--theme-header-background) 12%))}
+.page-hero{background:linear-gradient(135deg,var(--theme-page-banner-background),color-mix(in srgb,var(--theme-page-banner-background) 72%,white 28%))}
 .section-head p,.card p,.split p,.service-feature p,.project-card p,.person p,.stat span,.photo-note,.page-hero p{color:var(--theme-muted-text-color)}
