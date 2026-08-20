@@ -104,19 +104,29 @@ async function handleImageMutation(request,env){
   const existing=await env.GALLERY_BUCKET.get(key);
   if(!existing||!('body'in existing))return json({error:'Photo not found.'},404);
   const old=existing.customMetadata||{};
-  if(siteImage){
-   const updated={...old,title:clean(body.title??old.title,120),alt:clean(body.alt??old.alt,180),category:'Site Image',jobType:'',projectId:SITE_IMAGES_ID,published:'false',featured:'false'};
-   const bytes=await existing.arrayBuffer();
-   const saved=await env.GALLERY_BUCKET.put(key,bytes,{httpMetadata:existing.httpMetadata,customMetadata:updated});
-   return json({photo:siteImageToPhoto(saved)});
-  }
   const parts=key.split('/');
-  const jobType=cleanCategory(old.jobType||parts[0]);
-  const projectId=old.projectId||parts[1]||'';
-  const updated={...old,title:clean(body.title??old.title,120),alt:clean(body.alt??old.alt,180),jobType,projectId,category:jobType.charAt(0).toUpperCase()+jobType.slice(1),published:String(body.published===undefined?old.published==='true':body.published===true),featured:String(body.featured===undefined?old.featured==='true':body.featured===true)};
+  const currentJobType=siteImage?'':cleanCategory(old.jobType||parts[0]);
+  const currentProjectId=siteImage?SITE_IMAGES_ID:(old.projectId||parts[1]||'');
+  const requestedProjectId=body.projectId===undefined?currentProjectId:clean(body.projectId,80);
+  const requestedJobType=body.jobType===undefined?currentJobType:cleanCategory(body.jobType);
+  const targetSiteImage=requestedProjectId===SITE_IMAGES_ID;
+  if(!targetSiteImage&&(!requestedJobType||!requestedProjectId))return json({error:'Choose both a job type and project, or choose Site Images.'},400);
+  if(!targetSiteImage){
+   const project=await env.GALLERY_BUCKET.head(`projects/${requestedProjectId}.json`);
+   if(!project)return json({error:'Selected project no longer exists.'},400);
+   if(cleanCategory(project.customMetadata?.jobType)!==requestedJobType)return json({error:'Selected project does not match the job type.'},400);
+  }
+  const file=siteImage?key.slice(SITE_IMAGES_PREFIX.length):parts.slice(2).join('/');
+  if(!file)return json({error:'Photo filename is invalid.'},400);
+  const destinationKey=targetSiteImage?`${SITE_IMAGES_PREFIX}${file}`:`${requestedJobType}/${requestedProjectId}/${file}`;
+  const destinationChanged=destinationKey!==key;
+  const updated=targetSiteImage
+   ?{...old,title:clean(body.title??old.title,120),alt:clean(body.alt??old.alt,180),category:'Site Image',jobType:'',projectId:SITE_IMAGES_ID,published:'false',featured:'false'}
+   :{...old,title:clean(body.title??old.title,120),alt:clean(body.alt??old.alt,180),jobType:requestedJobType,projectId:requestedProjectId,category:requestedJobType.charAt(0).toUpperCase()+requestedJobType.slice(1),published:String(body.published===undefined?old.published==='true':body.published===true),featured:String(destinationChanged?false:(body.featured===undefined?old.featured==='true':body.featured===true))};
   const bytes=await existing.arrayBuffer();
-  const saved=await env.GALLERY_BUCKET.put(key,bytes,{httpMetadata:existing.httpMetadata,customMetadata:updated});
-  return json({photo:projectImageToPhoto(saved)});
+  const saved=await env.GALLERY_BUCKET.put(destinationKey,bytes,{httpMetadata:existing.httpMetadata,customMetadata:updated});
+  if(destinationChanged)await env.GALLERY_BUCKET.delete(key);
+  return json({photo:targetSiteImage?siteImageToPhoto(saved):projectImageToPhoto(saved),moved:destinationChanged,previousKey:key});
  }
  return null;
 }
