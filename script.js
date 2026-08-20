@@ -52,7 +52,7 @@ function loadScript(src){return new Promise((resolve,reject)=>{const script=docu
 
 async function mountReactLayout(){try{if(!window.React)await loadScript('https://unpkg.com/react@18.3.1/umd/react.production.min.js');if(!window.ReactDOM)await loadScript('https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js');await loadScript('components.js?v=20260820-admin-login');requestAnimationFrame(()=>{applyBrandLogo();markCurrentPage();improveImages();wireRenderedNavigation();});return true;}catch(error){console.warn('Shared React components could not load; using static page layout.',error);applyBrandLogo();wireRenderedNavigation();return false;}}
 
-async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-r2-fallback');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-github-slots');}catch(error){console.warn('Managed page content could not load.',error);}}
+async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-static-first-paint');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-static-first-paint');}catch(error){console.warn('Managed page content could not load.',error);}}
 
 applyBrandLogo();wireLegacyNavigation();wireRenderedNavigation();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();window.allThingsReactReady=mountReactLayout();
 
