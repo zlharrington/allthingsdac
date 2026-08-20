@@ -1,9 +1,10 @@
 const ALLOWED_PAGES=new Set(['global','home','services','work','about','contact','residential','commercial','federal']);
 const IMAGE_TYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'};
 const MAX_IMAGE_BYTES=15*1024*1024;
-const SITE_IMAGE_TARGETS={global:new Set(['siteLogo']),home:new Set(['service1Image','service2Image','service3Image','familyImage']),about:new Set(['ownerImage','davidImage','calebImage','jonathanImage'])};
+const SITE_IMAGE_TARGETS={global:new Set(['siteLogo']),home:new Set(['heroBackground','service1Image','service2Image','service3Image','familyImage']),about:new Set(['ownerImage','davidImage','calebImage','jonathanImage'])};
 const SITE_IMAGE_SLOT_SLUGS={
  'global.siteLogo':'site-logo',
+ 'home.heroBackground':'home-hero-background',
  'home.service1Image':'home-commercial',
  'home.service2Image':'home-government',
  'home.service3Image':'home-residential',
@@ -14,6 +15,7 @@ const SITE_IMAGE_SLOT_SLUGS={
  'about.jonathanImage':'about-jonathan'
 };
 const SITE_IMAGE_PAGE_FILES={home:'index.html',about:'about.html'};
+const SITE_IMAGE_STYLE_FILES={'home.heroBackground':'home-hero.css'};
 const LEGACY_R2_IMAGE_KEYS={
  'home.service1Image':'service1Image',
  'home.service2Image':'service2Image',
@@ -55,25 +57,37 @@ function replaceHtmlSlotSource(html,slotKey,url){
  const updatedTag=tag.replace(/\bsrc=["'][^"']*["']/i,`src="${url}"`);
  return html.slice(0,tagStart)+updatedTag+html.slice(tagEnd+1);
 }
+function replaceCssSlotSource(css,slotKey,url){
+ const marker=`data-site-image-slot:${slotKey}`;const markerIndex=css.indexOf(marker);
+ if(markerIndex<0)throw Object.assign(new Error(`Stylesheet is missing the ${slotKey} image slot.`),{status:500});
+ const urlStart=css.indexOf('url(',markerIndex),urlEnd=urlStart<0?-1:css.indexOf(')',urlStart);
+ if(urlStart<0||urlEnd<0)throw Object.assign(new Error(`Stylesheet image slot ${slotKey} is invalid.`),{status:500});
+ return css.slice(0,urlStart)+`url('${url}')`+css.slice(urlEnd+1);
+}
 async function commitAssignedImageAttempt(env,{bytes,contentType,page,field,adminUser}){
  const cfg=githubConfig(env),ext=IMAGE_TYPES[contentType],slotKey=`${page}.${field}`,slug=SITE_IMAGE_SLOT_SLUGS[slotKey];
  if(!ext||!slug)throw Object.assign(new Error('Invalid GitHub site-image slot.'),{status:400});
- const assetPath=`assets/site/${slug}.${ext}`,publicUrl=`/${assetPath}`,pageFile=SITE_IMAGE_PAGE_FILES[page]||'';
+ const assetPath=`assets/site/${slug}.${ext}`,publicUrl=`/${assetPath}`,styleFile=SITE_IMAGE_STYLE_FILES[slotKey]||'',pageFile=styleFile?'':(SITE_IMAGE_PAGE_FILES[page]||'');
  const ref=await githubApi(env,`/git/ref/heads/${cfg.branch}`),parentSha=ref.object?.sha;if(!parentSha)throw new Error('GitHub branch reference could not be resolved.');
  const parentCommit=await githubApi(env,`/git/commits/${parentSha}`),baseTree=parentCommit.tree?.sha;if(!baseTree)throw new Error('GitHub base tree could not be resolved.');
  const manifest=await readGithubManifest(env,cfg.branch);manifest[slotKey]=publicUrl;
- let updatedHtml='';if(pageFile){const html=await readGithubTextFile(env,pageFile,cfg.branch);updatedHtml=replaceHtmlSlotSource(html,slotKey,publicUrl);}
+ let updatedHtml='',updatedCss='';
+ if(pageFile){const html=await readGithubTextFile(env,pageFile,cfg.branch);updatedHtml=replaceHtmlSlotSource(html,slotKey,publicUrl);}
+ if(styleFile){const css=await readGithubTextFile(env,styleFile,cfg.branch);updatedCss=replaceCssSlotSource(css,slotKey,publicUrl);}
  const blobPromises=[
   githubApi(env,'/git/blobs',{method:'POST',body:{content:bytesToBase64(bytes),encoding:'base64'}}),
   githubApi(env,'/git/blobs',{method:'POST',body:{content:JSON.stringify(manifest,null,2)+'\n',encoding:'utf-8'}})
  ];
  if(pageFile)blobPromises.push(githubApi(env,'/git/blobs',{method:'POST',body:{content:updatedHtml,encoding:'utf-8'}}));
+ if(styleFile)blobPromises.push(githubApi(env,'/git/blobs',{method:'POST',body:{content:updatedCss,encoding:'utf-8'}}));
  const blobs=await Promise.all(blobPromises),treeEntries=[{path:assetPath,mode:'100644',type:'blob',sha:blobs[0].sha},{path:GITHUB_MANIFEST_PATH,mode:'100644',type:'blob',sha:blobs[1].sha}];
- if(pageFile)treeEntries.push({path:pageFile,mode:'100644',type:'blob',sha:blobs[2].sha});
+ let blobIndex=2;
+ if(pageFile)treeEntries.push({path:pageFile,mode:'100644',type:'blob',sha:blobs[blobIndex++].sha});
+ if(styleFile)treeEntries.push({path:styleFile,mode:'100644',type:'blob',sha:blobs[blobIndex++].sha});
  const tree=await githubApi(env,'/git/trees',{method:'POST',body:{base_tree:baseTree,tree:treeEntries}});
  const commit=await githubApi(env,'/git/commits',{method:'POST',body:{message:`Assign ${slotKey} site image`,tree:tree.sha,parents:[parentSha],author:{name:String(adminUser||'All Things DAC Admin').slice(0,80),email:'site-admin@allthingsdac.com'}}});
  await githubApi(env,`/git/refs/heads/${cfg.branch}`,{method:'PATCH',body:{sha:commit.sha,force:false}});
- return{url:publicUrl,commitSha:commit.sha,assetPath,slotKey,pageFile};
+ return{url:publicUrl,commitSha:commit.sha,assetPath,slotKey,pageFile,styleFile};
 }
 async function commitAssignedImageToGithub(env,args){let lastError;for(let attempt=0;attempt<3;attempt++){try{return await commitAssignedImageAttempt(env,args);}catch(error){lastError=error;if(error.status!==409||attempt===2)throw error;await new Promise(resolve=>setTimeout(resolve,120*(attempt+1)));}}throw lastError;}
 async function readPageContent(env,page){const object=await env.GALLERY_BUCKET.get(`site-content/${page}.json`);if(!object)return{};try{return JSON.parse(await object.text())||{};}catch{return{};}}
@@ -91,6 +105,6 @@ export async function handleMoveGalleryPhotoToSite(request,env,adminUser){
  const source=await env.GALLERY_BUCKET.get(key);if(!source)return json({error:'Photo not found.'},404);
  const contentType=source.httpMetadata?.contentType||'';if(!IMAGE_TYPES[contentType])return json({error:'This image type cannot be used as a site image.'},400);
  const bytes=await source.arrayBuffer();
- try{const assigned=await commitAssignedImageToGithub(env,{bytes,contentType,page,field,adminUser});await clearLegacyImageOverride(env,page,field,adminUser);return json({ok:true,page,field,url:assigned.url,sourceKey:key,commitSha:assigned.commitSha,storage:'github',pageFile:assigned.pageFile||null});}catch(error){return json({error:error.message||'GitHub assignment failed.'},error.status>=400&&error.status<600?error.status:502);}
+ try{const assigned=await commitAssignedImageToGithub(env,{bytes,contentType,page,field,adminUser});await clearLegacyImageOverride(env,page,field,adminUser);return json({ok:true,page,field,url:assigned.url,sourceKey:key,commitSha:assigned.commitSha,storage:'github',pageFile:assigned.pageFile||null,styleFile:assigned.styleFile||null});}catch(error){return json({error:error.message||'GitHub assignment failed.'},error.status>=400&&error.status<600?error.status:502);}
 }
 export async function handleSiteMedia(pathname,env){const encoded=pathname.slice('/media/site/'.length);if(!encoded)return new Response('Not found',{status:404});let file;try{file=decodeURIComponent(encoded);}catch{return new Response('Bad request',{status:400});}if(!file||file.includes('/')||file.includes('..'))return new Response('Not found',{status:404});let object=await env.GALLERY_BUCKET.get(`site-assets/${file}`);if(!object)object=await env.GALLERY_BUCKET.get(`site-images/${file}`);if(!object)return new Response('Not found',{status:404});const headers=new Headers();object.writeHttpMetadata(headers);headers.set('etag',object.httpEtag);headers.set('cache-control','public, max-age=31536000, immutable');headers.set('x-content-type-options','nosniff');return new Response(object.body,{headers});}
