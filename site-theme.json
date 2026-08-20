@@ -1,0 +1,12 @@
+{
+  "topbarBackground": "#24372d",
+  "headerBackground": "#151a17",
+  "primaryButton": "#a9462c",
+  "primaryButtonHover": "#7e321f",
+  "ctaBackground": "#24372d",
+  "footerBackground": "#111512",
+  "pageBannerBackground": "#f4f5f3",
+  "pageBackground": "#ffffff",
+  "textColor": "#171a1d",
+  "mutedTextColor": "#667078"
+}
