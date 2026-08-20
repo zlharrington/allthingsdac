@@ -3,6 +3,7 @@ const grid=document.getElementById('photoGrid');
 if(!grid)return;
 const destinations=[
  {page:'global',field:'siteLogo',label:'Site-wide — Main logo'},
+ {page:'home',field:'heroBackground',label:'Home — Hero background image'},
  {page:'home',field:'service1Image',label:'Home — Commercial service image'},
  {page:'home',field:'service2Image',label:'Home — Government service image'},
  {page:'home',field:'service3Image',label:'Home — Residential service image'},
