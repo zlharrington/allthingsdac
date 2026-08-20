@@ -91,5 +91,5 @@ window.DAC_PAGE_SCHEMA=pages;
 function currentPageKey(){const trimmed=location.pathname.replace(/\/+$/,'');const leaf=(trimmed.split('/').pop()||'').toLowerCase();const file=!leaf?'index.html':leaf.includes('.')?leaf:`${leaf}.html`;return Object.keys(pages).find(key=>pages[key].file===file)||'';}
 function applyContent(page,content){for(const field of page.fields){const value=content?.[field.key];if(typeof value!=='string'||!value)continue;const el=document.querySelector(field.selector);if(!el)continue;if(field.type==='image'){el.src=value;el.removeAttribute('srcset');}else if(field.attr){el.setAttribute(field.attr,value);}else{el.textContent=value;}}}
 async function hydrate(){const key=currentPageKey();const page=pages[key];if(!page)return;try{const response=await fetch(`/api/site-content?page=${encodeURIComponent(key)}`,{cache:'no-store'});if(!response.ok)return;const data=await response.json();applyContent(page,data.content||{});}catch(error){console.warn('Page content overrides could not be loaded.',error);}}
-hydrate();
+window.DAC_SITE_CONTENT_READY=hydrate();
 })();
