@@ -1,15 +1,15 @@
 /* Managed by the admin Site Theme / Color Manager. */
 :root{
-  --theme-topbar-background:#5f7484;
-  --theme-header-background:#50697a;
-  --theme-primary-button:#a85f48;
-  --theme-primary-button-hover:#7f4634;
-  --theme-cta-background:#536e7d;
-  --theme-footer-background:#2e434f;
-  --theme-page-banner-background:#e8f0f4;
-  --theme-page-background:#f8fbfc;
-  --theme-text-color:#20303a;
-  --theme-muted-text-color:#5b6c76;
+  --theme-topbar-background:#627682;
+  --theme-header-background:#4b6477;
+  --theme-primary-button:#345e7a;
+  --theme-primary-button-hover:#24465c;
+  --theme-cta-background:#526d80;
+  --theme-footer-background:#263b49;
+  --theme-page-banner-background:#eef4f7;
+  --theme-page-background:#fbfdfe;
+  --theme-text-color:#203039;
+  --theme-muted-text-color:#61727c;
   --accent:var(--theme-primary-button);
   --accent-dark:var(--theme-primary-button-hover);
   --forest:var(--theme-topbar-background);
