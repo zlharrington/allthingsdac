@@ -91,7 +91,7 @@ export async function onRequestPost(context) {
   }
 
   const fileName = `${page}-${field}-${Date.now()}-${crypto.randomUUID()}.${ext}`;
-  const siteKey = `site-assets/${fileName}`;
+  const siteKey = `site-images/${fileName}`;
   const bytes = await source.arrayBuffer();
 
   await context.env.GALLERY_BUCKET.put(siteKey, bytes, {
@@ -100,6 +100,14 @@ export async function onRequestPost(context) {
       cacheControl: 'public, max-age=31536000, immutable'
     },
     customMetadata: {
+      title: source.customMetadata?.title || '',
+      alt: source.customMetadata?.alt || '',
+      category: 'Site Image',
+      jobType: '',
+      projectId: 'site-images',
+      published: 'false',
+      featured: 'false',
+      createdAt: source.customMetadata?.createdAt || new Date().toISOString(),
       page,
       field,
       movedAt: new Date().toISOString(),
@@ -108,7 +116,7 @@ export async function onRequestPost(context) {
     }
   });
 
-  const url = `/media/site/${encodeURIComponent(fileName)}`;
+  const url = `/site-media/${encodeURIComponent(fileName)}`;
   const content = await readPageContent(context.env.GALLERY_BUCKET, page);
   content[field] = url;
   await writePageContent(context.env.GALLERY_BUCKET, page, content, context.data?.adminEmail || '');
