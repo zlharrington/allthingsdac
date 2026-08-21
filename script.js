@@ -66,7 +66,49 @@ function improveImages(root=document){root.querySelectorAll('img').forEach((img,
 function ensureCanonical(){if(document.querySelector('link[rel="canonical"]'))return;const canonical=document.createElement('link');canonical.rel='canonical';canonical.href=window.location.origin+(window.location.pathname.endsWith('index.html')?'/':window.location.pathname);document.head.appendChild(canonical);}
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
 async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');await loadScript('site-images.js?v=20260820-optimized-3');}catch(error){console.warn('Managed page content could not load.',error);}}
+function enableSmoothWheelGlide(){
+  if(!window.matchMedia('(pointer:fine)').matches||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let current=window.scrollY;
+  let target=current;
+  let frame=0;
+  let animating=false;
+  const maxScroll=()=>Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+  const clamp=value=>Math.max(0,Math.min(value,maxScroll()));
+  const hasScrollableAncestor=node=>{
+    for(let el=node instanceof Element?node:null;el&&el!==document.body;el=el.parentElement){
+      const style=getComputedStyle(el);
+      if((style.overflowY==='auto'||style.overflowY==='scroll')&&el.scrollHeight>el.clientHeight+1)return true;
+    }
+    return false;
+  };
+  const step=()=>{
+    const distance=target-current;
+    current+=distance*.14;
+    window.scrollTo(0,current);
+    if(Math.abs(distance)<.45){
+      current=target;
+      window.scrollTo(0,target);
+      frame=0;
+      animating=false;
+      return;
+    }
+    frame=requestAnimationFrame(step);
+  };
+  window.addEventListener('wheel',event=>{
+    if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)||hasScrollableAncestor(event.target))return;
+    event.preventDefault();
+    const unit=event.deltaMode===1?18:event.deltaMode===2?window.innerHeight:1;
+    if(!animating){current=window.scrollY;target=current;}
+    target=clamp(target+event.deltaY*unit);
+    animating=true;
+    if(!frame)frame=requestAnimationFrame(step);
+  },{passive:false});
+  window.addEventListener('resize',()=>{target=clamp(target);current=clamp(current);},{passive:true});
+  window.addEventListener('keydown',event=>{
+    if(['PageUp','PageDown','Home','End','ArrowUp','ArrowDown',' '].includes(event.key)&&frame){cancelAnimationFrame(frame);frame=0;animating=false;current=target=window.scrollY;}
+  });
+}
 
-applyBrandLogo();ensureReviewsNavLinks();wireLegacyNavigation();wireRenderedNavigation();ensureAdminFooterLink();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();
+applyBrandLogo();ensureReviewsNavLinks();wireLegacyNavigation();wireRenderedNavigation();ensureAdminFooterLink();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();enableSmoothWheelGlide();loadManagedPageLayers();
 
 const form=document.querySelector('[data-contact-form]');if(form){form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form);const submit=form.querySelector('button[type="submit"]');const original=submit?.textContent;if(submit){submit.disabled=true;submit.setAttribute('aria-busy','true');submit.textContent='Opening email…';}const subject=encodeURIComponent('Estimate Request — '+(data.get('name')||'Website'));const body=encodeURIComponent(`Name: ${data.get('name')||''}\nPhone: ${data.get('phone')||''}\nEmail: ${data.get('email')||''}\n\nProject details:\n${data.get('message')||''}`);window.location.href=`mailto:matt@allthingsdac.com?subject=${subject}&body=${body}`;setTimeout(()=>{if(submit){submit.disabled=false;submit.setAttribute('aria-busy','false');submit.textContent=original||'Email Estimate Request';}},900);});}
