@@ -1,22 +1,27 @@
-const themeStyles=document.createElement('link');themeStyles.rel='stylesheet';themeStyles.href=`/site-theme.css?v=${Date.now()}`;document.head.appendChild(themeStyles);
+const themeStyles=document.createElement('link');themeStyles.rel='stylesheet';themeStyles.href='/site-theme.css';document.head.appendChild(themeStyles);
 const favicon=document.createElement('link');favicon.rel='icon';favicon.type='image/svg+xml';favicon.href='/assets/favicon.svg?v=20260818';document.head.appendChild(favicon);
-const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='optimizations.css?v=20260820-approved-logo-restored';document.head.appendChild(optimizationStyles);
-const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}html:not(.dac-managed-images-ready) .brand-logo,html:not(.dac-managed-images-ready) .expertise .card img,html:not(.dac-managed-images-ready) .split>img{visibility:hidden!important}';document.head.appendChild(style);
+const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='/optimizations.css?v=20260820-approved-logo-restored';document.head.appendChild(optimizationStyles);
+const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}';document.head.appendChild(style);
 
 const approvedLogoParts=['/logo-data/part1.txt','/logo-data/part2.txt','/logo-data/part3.txt','/logo-data/part4.txt','/logo-data/part5.txt'];
 const transparentPixel='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 let approvedLogoPromise;
+function loadSiteImageSlots(){
+  if(!window.DAC_SITE_IMAGE_SLOTS_PROMISE){
+    window.DAC_SITE_IMAGE_SLOTS_PROMISE=fetch('/site-image-slots.json')
+      .then(response=>response.ok?response.json():{})
+      .catch(()=>({}));
+  }
+  return window.DAC_SITE_IMAGE_SLOTS_PROMISE;
+}
 async function loadManagedLogo(){
   try{
-    const slotResponse=await fetch('/site-image-slots.json',{cache:'no-store'});
-    if(slotResponse.ok){
-      const slots=await slotResponse.json();
-      const githubLogo=String(slots?.['global.siteLogo']||'').trim();
-      if(githubLogo)return githubLogo;
-    }
+    const slots=await loadSiteImageSlots();
+    const githubLogo=String(slots?.['global.siteLogo']||'').trim();
+    if(githubLogo)return githubLogo;
   }catch{}
   try{
-    const response=await fetch('/api/site-content?page=global',{cache:'no-store'});
+    const response=await fetch('/api/site-content?page=global');
     if(!response.ok)return '';
     const data=await response.json();
     return String(data?.content?.siteLogo||'').trim();
@@ -60,7 +65,7 @@ function addMobileActionBar(){if(document.querySelector('.mobile-action-bar'))re
 function improveImages(root=document){root.querySelectorAll('img').forEach((img,index)=>{img.decoding='async';if(index>0&&!img.closest('.hero'))img.loading='lazy';});}
 function ensureCanonical(){if(document.querySelector('link[rel="canonical"]'))return;const canonical=document.createElement('link');canonical.rel='canonical';canonical.href=window.location.origin+(window.location.pathname.endsWith('index.html')?'/':window.location.pathname);document.head.appendChild(canonical);}
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
-async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');if(window.DAC_SITE_CONTENT_READY)await window.DAC_SITE_CONTENT_READY;await loadScript('site-images.js?v=20260820-optimized-2');await loadApprovedLogo();}catch(error){console.warn('Managed page content could not load.',error);}finally{document.documentElement.classList.add('dac-managed-images-ready');}}
+async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');await loadScript('site-images.js?v=20260820-optimized-3');}catch(error){console.warn('Managed page content could not load.',error);}}
 
 applyBrandLogo();ensureReviewsNavLinks();wireLegacyNavigation();wireRenderedNavigation();ensureAdminFooterLink();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();
 
