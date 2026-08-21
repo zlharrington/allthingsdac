@@ -8,3 +8,4 @@ wrangler.jsonc
 functions/
 README.md
 .github/
+.deploy-trigger
