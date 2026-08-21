@@ -15,3 +15,6 @@ main>section:not(.hero):not(.page-hero):not(.trust-strip):not(.cta){position:rel
 .footer{border-top:1px solid rgba(255,255,255,.14);box-shadow:0 24px 70px rgba(21,34,42,.16) inset}.footer-grid>div:not(:first-child){padding-left:28px;border-left:1px solid rgba(255,255,255,.13)}
 @media(max-width:850px){.hero-inner{padding-left:20px}.hero-inner::before{top:102px;bottom:72px}.footer-grid>div:not(:first-child){padding-left:0;border-left:0}.trust-grid div::after{display:none}}
 @media(max-width:560px){.hero-inner{padding-left:16px}.hero-inner::before{top:92px;bottom:66px;width:2px}.section-head::after{width:56px}.card,.project-card,.person,.service-feature{box-shadow:0 12px 30px rgba(32,48,58,.08)}main>section:not(.hero):not(.page-hero):not(.trust-strip):not(.cta)+section:not(.trust-strip):not(.cta)::before{width:calc(100% - 28px)}}
+
+/* Keep image/card trims visibly edge-to-edge instead of fading short. */
+.card::before,.project-card::before,.person::before,.service-feature::before,.stat::before{left:0;right:0;width:auto;background:linear-gradient(90deg,var(--theme-header-background,#50697a),color-mix(in srgb,var(--theme-header-background,#50697a) 72%,white 28%));opacity:.82}.split>img{border-top:3px solid var(--theme-header-background,#50697a)}
