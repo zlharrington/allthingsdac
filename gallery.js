@@ -16,43 +16,11 @@
     if (archive) archive.hidden = true;
   }
 
-  function ProjectCard({ photo }) {
-    return React.createElement('article', { className: 'managed-project' },
-      React.createElement('img', {
-        src: photo.url,
-        alt: photo.alt || '',
-        loading: 'lazy'
-      }),
-      React.createElement('div', null,
-        React.createElement('span', { className: 'eyebrow' }, photo.category || 'Project'),
-        React.createElement('h2', null, photo.title || 'Project photo')
-      )
-    );
-  }
-
-  function ProjectGallery({ photos }) {
-    if (!photos.length) return React.createElement('p', { className: 'photo-note' }, 'Project photos are being selected for this gallery.');
-    return React.createElement(React.Fragment, null,
-      ...photos.map((photo, index) => React.createElement(ProjectCard, {
-        key: photo.id || photo.url || index,
-        photo
-      }))
-    );
-  }
-
   fetch('/api/gallery')
     .then(async response => {
       if (!response.ok) throw new Error('Gallery unavailable');
       return response.json();
     })
-    .then(async ({ photos = [] }) => {
-      const reactReady = window.allThingsReactReady ? await window.allThingsReactReady : false;
-      if (!reactReady || !window.React || !window.ReactDOM) {
-        legacyRender(photos);
-        return;
-      }
-      ReactDOM.createRoot(managed).render(React.createElement(ProjectGallery, { photos }));
-      if (photos.length && archive) archive.hidden = true;
-    })
+    .then(({ photos = [] }) => legacyRender(photos))
     .catch(() => legacyRender([]));
 })();
