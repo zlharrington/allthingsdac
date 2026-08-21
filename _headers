@@ -12,6 +12,9 @@
 /styles.css
   Cache-Control: no-cache, must-revalidate
 
+/optimizations.css
+  Cache-Control: no-cache, must-revalidate
+
 /site-theme.css
   Cache-Control: no-cache, must-revalidate
 
