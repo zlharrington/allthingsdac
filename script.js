@@ -1,6 +1,6 @@
 const themeStyles=document.createElement('link');themeStyles.rel='stylesheet';themeStyles.href='/site-theme.css';document.head.appendChild(themeStyles);
 const favicon=document.createElement('link');favicon.rel='icon';favicon.type='image/svg+xml';favicon.href='/assets/favicon.svg?v=20260818';document.head.appendChild(favicon);
-const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='/optimizations.css?v=20260820-approved-logo-restored';document.head.appendChild(optimizationStyles);
+const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='/optimizations.css?v=20260820-logo-smaller';document.head.appendChild(optimizationStyles);
 const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}';document.head.appendChild(style);
 
 const approvedLogoParts=['/logo-data/part1.txt','/logo-data/part2.txt','/logo-data/part3.txt','/logo-data/part4.txt','/logo-data/part5.txt'];
