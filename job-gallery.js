@@ -4,9 +4,6 @@
   const type=(root.dataset.jobType||'').toLowerCase();
   const CATEGORY_ORDER=['retail','medical','auto-dealerships','general'];
   const CATEGORY_LABELS={retail:'Retail',medical:'Medical','auto-dealerships':'Auto Dealerships',general:'General'};
-  const coverStyle=document.createElement('style');
-  coverStyle.textContent='.project-group summary{grid-template-columns:150px 1fr auto}.project-cover{width:150px;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:var(--soft)}.project-cover img{width:100%;height:100%;object-fit:cover;display:block}.commercial-category-group{display:grid;gap:14px;margin:0 0 34px}.commercial-category-head{display:flex;align-items:end;justify-content:space-between;gap:20px;padding:0 2px 8px;border-bottom:3px solid var(--job-accent)}.commercial-category-head h2{margin:0;font-size:clamp(1.55rem,3vw,2.25rem)}.commercial-category-head span{font-weight:800;color:var(--muted)}.commercial-category-projects{display:grid;gap:18px}@media(max-width:700px){.project-group summary{grid-template-columns:105px 1fr}.project-count{grid-column:2}.project-cover{width:105px}.commercial-category-head{align-items:start;flex-direction:column;gap:4px}}@media(max-width:480px){.project-group summary{grid-template-columns:1fr}.project-cover{width:100%;max-height:220px}.project-count{grid-column:auto}}';
-  document.head.appendChild(coverStyle);
   const escapeHtml=value=>String(value||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   let activePhotos=[],activeIndex=0,lastTrigger=null;
   const lightbox=document.createElement('div');
@@ -19,6 +16,7 @@
   function openViewer(projectIndex,photoIndex,trigger){const details=root.querySelectorAll('.project-group')[projectIndex];if(!details)return;activePhotos=JSON.parse(details.dataset.photos||'[]');lastTrigger=trigger;show(photoIndex);lightbox.hidden=false;document.body.classList.add('lightbox-open');close.focus();}
   function closeViewer(){lightbox.hidden=true;document.body.classList.remove('lightbox-open');img.removeAttribute('src');if(lastTrigger)lastTrigger.focus();}
   prev.addEventListener('click',()=>show(activeIndex-1));next.addEventListener('click',()=>show(activeIndex+1));close.addEventListener('click',closeViewer);lightbox.addEventListener('click',e=>{if(e.target.matches('[data-close]'))closeViewer();});document.addEventListener('keydown',e=>{if(lightbox.hidden)return;if(e.key==='Escape')closeViewer();if(e.key==='ArrowLeft')show(activeIndex-1);if(e.key==='ArrowRight')show(activeIndex+1);});
+  root.addEventListener('click',event=>{const button=event.target.closest('.project-photo-button');if(!button||!root.contains(button))return;openViewer(Number(button.dataset.projectIndex),Number(button.dataset.photoIndex),button);});
   function projectHtml(project,index){const photos=project.photos||[];const cover=photos[0];const description=project.description?`<p>${escapeHtml(project.description)}</p>`:'';const safePhotos=escapeHtml(JSON.stringify(photos.map(({url,alt,title})=>({url,alt,title}))));const coverHtml=cover?`<div class="project-cover"><img src="${escapeHtml(cover.url)}" alt="${escapeHtml(cover.alt)}" loading="lazy"></div>`:'<div class="project-cover" aria-hidden="true"></div>';const photoGrid=photos.length?`<div class="project-photo-grid">${photos.map((photo,photoIndex)=>`<button class="project-photo-button" type="button" data-project-index="${index}" data-photo-index="${photoIndex}" aria-label="Open photo ${photoIndex+1} of ${photos.length} in ${escapeHtml(project.name)}"><img src="${escapeHtml(photo.url)}" alt="${escapeHtml(photo.alt)}" loading="lazy"></button>`).join('')}</div>`:'<div class="gallery-empty">Photos for this project are being added.</div>';return `<details class="project-group" data-photos="${safePhotos}"><summary>${coverHtml}<div class="project-group-title"><span class="eyebrow">${escapeHtml(type)} project</span><h2>${escapeHtml(project.name)}</h2>${description}</div><span class="project-count">${photos.length} photo${photos.length===1?'':'s'}</span></summary>${photoGrid}</details>`;}
   function render(projects){
     if(!projects.length){root.innerHTML='<div class="gallery-empty">Project photos are being prepared for this section.</div>';return;}
@@ -28,7 +26,6 @@
     }else{
       root.innerHTML=projects.map((project,index)=>projectHtml(project,index)).join('');
     }
-    root.querySelectorAll('.project-photo-button').forEach(button=>button.addEventListener('click',()=>openViewer(Number(button.dataset.projectIndex),Number(button.dataset.photoIndex),button)));
   }
   fetch(`/api/projects?type=${encodeURIComponent(type)}`).then(async response=>{if(!response.ok)throw new Error('Gallery unavailable');return response.json();}).then(({projects=[]})=>render(projects)).catch(()=>{root.innerHTML='<div class="gallery-empty">Project gallery is temporarily unavailable.</div>';});
 })();
