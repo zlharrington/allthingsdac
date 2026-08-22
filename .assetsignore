@@ -1,5 +1,7 @@
 worker.js
 entry-worker.js
+secure-entry-worker.js
+estimate-api.js
 site-content-api.js
 admin-access-api.js
 google-reviews-api.js
@@ -9,3 +11,4 @@ functions/
 README.md
 .github/
 .deploy-trigger
+backup/
