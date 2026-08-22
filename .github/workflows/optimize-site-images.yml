@@ -1,0 +1,104 @@
+name: Optimize site images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/optimize-site-images.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Create optimized WebP copies and switch site references
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageOps
+          import json
+
+          root = Path('.')
+          out_dir = root / 'assets' / 'site' / 'optimized'
+          out_dir.mkdir(parents=True, exist_ok=True)
+
+          targets = {
+              'assets/site/home-hero-background.jpg': ('assets/site/optimized/home-hero-background.webp', 1920, 82),
+              'assets/site/home-family.jpg': ('assets/site/optimized/home-family.webp', 1400, 84),
+              'assets/site/home-commercial.png': ('assets/site/optimized/home-commercial.webp', 1200, 82),
+              'assets/site/home-government.jpg': ('assets/site/optimized/home-government.webp', 1200, 82),
+              'assets/site/home-residential.png': ('assets/site/optimized/home-residential.webp', 1200, 82),
+              'assets/site/about-owner.jpg': ('assets/site/optimized/about-owner.webp', 1200, 84),
+              'assets/site/about-david.jpg': ('assets/site/optimized/about-david.webp', 1000, 84),
+              'assets/site/about-caleb.jpg': ('assets/site/optimized/about-caleb.webp', 1000, 84),
+              'assets/site/about-jonathan.jpg': ('assets/site/optimized/about-jonathan.webp', 1000, 84),
+          }
+
+          for src_name, (dst_name, max_width, quality) in targets.items():
+              src = root / src_name
+              dst = root / dst_name
+              if not src.exists():
+                  raise SystemExit(f'Missing source image: {src_name}')
+              with Image.open(src) as im:
+                  im = ImageOps.exif_transpose(im)
+                  if im.width > max_width:
+                      new_height = max(1, round(im.height * max_width / im.width))
+                      im = im.resize((max_width, new_height), Image.Resampling.LANCZOS)
+                  if im.mode not in ('RGB', 'RGBA'):
+                      im = im.convert('RGBA' if 'transparency' in im.info else 'RGB')
+                  dst.parent.mkdir(parents=True, exist_ok=True)
+                  im.save(dst, 'WEBP', quality=quality, method=6)
+                  print(f'{src_name}: {src.stat().st_size:,} -> {dst_name}: {dst.stat().st_size:,} bytes ({im.width}x{im.height})')
+
+          replacements = {
+              '/assets/site/home-hero-background.jpg': '/assets/site/optimized/home-hero-background.webp',
+              '/assets/site/home-family.jpg': '/assets/site/optimized/home-family.webp',
+              '/assets/site/home-commercial.png': '/assets/site/optimized/home-commercial.webp',
+              '/assets/site/home-government.jpg': '/assets/site/optimized/home-government.webp',
+              '/assets/site/home-residential.png': '/assets/site/optimized/home-residential.webp',
+              '/assets/site/about-owner.jpg': '/assets/site/optimized/about-owner.webp',
+              '/assets/site/about-david.jpg': '/assets/site/optimized/about-david.webp',
+              '/assets/site/about-caleb.jpg': '/assets/site/optimized/about-caleb.webp',
+              '/assets/site/about-jonathan.jpg': '/assets/site/optimized/about-jonathan.webp',
+          }
+
+          for file_name in ['index.html', 'about.html', 'home-hero.css']:
+              path = root / file_name
+              text = path.read_text(encoding='utf-8')
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              path.write_text(text, encoding='utf-8')
+
+          manifest_path = root / 'site-image-slots.json'
+          manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+          for key, value in list(manifest.items()):
+              manifest[key] = replacements.get(value, value)
+          manifest_path.write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Commit optimized copies
+        run: |
+          if git diff --quiet && [ -z "$(git status --porcelain assets/site/optimized)" ]; then
+            echo "No image changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/site/optimized index.html about.html home-hero.css site-image-slots.json
+          git commit -m "Serve optimized WebP site images [skip ci]"
+          git push
