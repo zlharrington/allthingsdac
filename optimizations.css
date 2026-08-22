@@ -18,3 +18,6 @@ main>section:not(.hero):not(.page-hero):not(.trust-strip):not(.cta){position:rel
 
 /* Keep image/card trims visibly edge-to-edge instead of fading short. */
 .card::before,.project-card::before,.person::before,.service-feature::before,.stat::before{left:0;right:0;width:auto;background:linear-gradient(90deg,var(--theme-header-background,#50697a),color-mix(in srgb,var(--theme-header-background,#50697a) 72%,white 28%));opacity:.82}.split>img{border-top:3px solid var(--theme-header-background,#50697a)}
+
+/* Soft white trim around the Work hard / Trust God header motto. */
+.header-motto{text-shadow:-1px -1px 0 rgba(255,255,255,.72),1px -1px 0 rgba(255,255,255,.72),-1px 1px 0 rgba(255,255,255,.72),1px 1px 0 rgba(255,255,255,.72),0 0 3px rgba(255,255,255,.28)}
