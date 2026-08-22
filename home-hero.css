@@ -1,5 +1,5 @@
 /* data-site-image-slot:home.heroBackground */
-.hero{background:linear-gradient(100deg,var(--theme-header-background,#50697a) 0%,color-mix(in srgb,var(--theme-header-background,#50697a) 88%,white 12%) 18%,color-mix(in srgb,var(--theme-header-background,#50697a) 62%,transparent) 48%,color-mix(in srgb,var(--theme-header-background,#50697a) 24%,transparent) 74%,transparent 100%),url('/assets/site/home-hero-background.jpg') center/cover no-repeat}
+.hero{background:linear-gradient(100deg,var(--theme-header-background,#50697a) 0%,color-mix(in srgb,var(--theme-header-background,#50697a) 88%,white 12%) 18%,color-mix(in srgb,var(--theme-header-background,#50697a) 62%,transparent) 48%,color-mix(in srgb,var(--theme-header-background,#50697a) 24%,transparent) 74%,transparent 100%),url('/assets/site/optimized/home-hero-background.webp') center/cover no-repeat}
 
 /* Keep the homepage hero copy on the same left grid line as the rest of the site. */
 .hero .hero-inner{padding-left:0!important;text-align:left!important;margin-left:auto;margin-right:auto;max-width:var(--max)!important}

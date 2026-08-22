@@ -1,12 +1,12 @@
 {
   "global.siteLogo": "/assets/allthingsdac-logo-white.png",
-  "about.ownerImage": "/assets/site/about-owner.jpg",
-  "about.davidImage": "/assets/site/about-david.jpg",
-  "about.calebImage": "/assets/site/about-caleb.jpg",
-  "about.jonathanImage": "/assets/site/about-jonathan.jpg",
-  "home.familyImage": "/assets/site/home-family.jpg",
-  "home.heroBackground": "/assets/site/home-hero-background.jpg",
-  "home.service2Image": "/assets/site/home-government.jpg",
-  "home.service1Image": "/assets/site/home-commercial.png",
-  "home.service3Image": "/assets/site/home-residential.png"
+  "about.ownerImage": "/assets/site/optimized/about-owner.webp",
+  "about.davidImage": "/assets/site/optimized/about-david.webp",
+  "about.calebImage": "/assets/site/optimized/about-caleb.webp",
+  "about.jonathanImage": "/assets/site/optimized/about-jonathan.webp",
+  "home.familyImage": "/assets/site/optimized/home-family.webp",
+  "home.heroBackground": "/assets/site/optimized/home-hero-background.webp",
+  "home.service2Image": "/assets/site/optimized/home-government.webp",
+  "home.service1Image": "/assets/site/optimized/home-commercial.webp",
+  "home.service3Image": "/assets/site/optimized/home-residential.webp"
 }
