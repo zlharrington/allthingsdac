@@ -172,7 +172,7 @@ async function mergePublicGallery(request,env,ctx){
  const baseResponse=await baseWorker.fetch(request,env,ctx);
  if(!baseResponse.ok)return baseResponse;
  let data;try{data=await baseResponse.clone().json();}catch{return baseResponse;}
- const projectImages=(await listProjectImages(env.GALLERY_BUCKET)).filter(photo=>photo.published).map(({key,uploadedBy,size,featured,...photo})=>photo);
+ const projectImages=(await listProjectImages(env.GALLERY_BUCKET)).filter(photo=>photo.published).map(({key,uploadedBy,size,...photo})=>photo);
  return json({photos:[...projectImages,...(data.photos||[])]},200,'public, max-age=60');
 }
 
@@ -181,7 +181,7 @@ async function mergePublicProjects(request,env,ctx){
  if(!baseResponse.ok)return baseResponse;
  let data;try{data=await baseResponse.clone().json();}catch{return baseResponse;}
  const newPhotos=(await listProjectImages(env.GALLERY_BUCKET)).filter(photo=>photo.published);
- const projects=(data.projects||[]).map(project=>({...project,photos:[...(project.photos||[]),...newPhotos.filter(photo=>photo.projectId===project.id).map(({key,uploadedBy,size,published,featured,...photo})=>photo)]}));
+ const projects=(data.projects||[]).map(project=>({...project,photos:[...(project.photos||[]),...newPhotos.filter(photo=>photo.projectId===project.id).map(({key,uploadedBy,size,published,...photo})=>photo)]}));
  return json({projects},200,'public, max-age=60');
 }
 
