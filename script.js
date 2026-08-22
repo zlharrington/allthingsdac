@@ -1,7 +1,7 @@
 const themeStyles=document.createElement('link');themeStyles.rel='stylesheet';themeStyles.href='/site-theme.css';document.head.appendChild(themeStyles);
 const favicon=document.createElement('link');favicon.rel='icon';favicon.type='image/svg+xml';favicon.href='/assets/favicon.svg?v=20260818';document.head.appendChild(favicon);
 const optimizationStyles=document.createElement('link');optimizationStyles.rel='stylesheet';optimizationStyles.href='/optimizations.css?v=20260820-logo-smaller';document.head.appendChild(optimizationStyles);
-const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}';document.head.appendChild(style);
+const style=document.createElement('style');style.textContent='.site-header .brand-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.footer-logo{background:transparent!important;padding:0!important;border-radius:0!important;box-shadow:none!important}.site-header .nav{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:0!important}.site-header .nav::after{content:none!important;display:none!important}.header-motto{flex:0 0 auto;margin-left:18px;margin-right:auto;font-family:Georgia,\'Times New Roman\',serif;font-size:1.08rem;font-weight:700;font-style:italic;line-height:1.05;text-align:center;letter-spacing:.015em;color:rgba(154,174,181,.9);white-space:nowrap}.nav-links{margin-left:auto}@media(max-width:850px){.header-motto{margin-left:12px;font-size:.88rem;line-height:1.02}.mobile-toggle{margin-left:auto}}@media(max-width:560px){.header-motto{margin-left:9px;font-size:.76rem;letter-spacing:0}}';document.head.appendChild(style);
 
 const approvedLogoParts=['/logo-data/part1.txt','/logo-data/part2.txt','/logo-data/part3.txt','/logo-data/part4.txt','/logo-data/part5.txt'];
 const transparentPixel='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -54,6 +54,16 @@ function applyBrandLogo(root=document){
   });
   loadApprovedLogo().catch(error=>console.error('Approved logo could not be loaded.',error));
 }
+function ensureHeaderMotto(){
+  const nav=document.querySelector('.site-header .nav');
+  const logo=nav?.querySelector('.brand-logo');
+  if(!nav||!logo||nav.querySelector('.header-motto'))return;
+  const motto=document.createElement('div');
+  motto.className='header-motto';
+  motto.setAttribute('aria-label','Work hard. Trust God.');
+  motto.innerHTML='<span>Work hard</span><br><span>Trust God</span>';
+  logo.insertAdjacentElement('afterend',motto);
+}
 
 function closeLegacyNavigation(){const toggle=document.querySelector('.mobile-toggle');const nav=document.querySelector('.nav-links');if(toggle&&nav&&nav.classList.contains('open')){nav.classList.remove('open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open menu');}}
 function ensureReviewsNavLinks(){const nav=document.querySelector('.nav-links');if(nav&&!nav.querySelector('a[href="reviews.html"]')){const link=document.createElement('a');link.href='reviews.html';link.textContent='Reviews';const about=nav.querySelector('a[href="about.html"]');nav.insertBefore(link,about||nav.querySelector('.btn')||null);}const footer=document.querySelector('.footer-bottom');if(footer&&!footer.querySelector('a[href="reviews.html"]')){const about=footer.querySelector('a[href="about.html"]');const link=document.createElement('a');link.href='reviews.html';link.textContent='Reviews';if(about){footer.insertBefore(link,about);footer.insertBefore(document.createTextNode(' · '),about);}else{footer.append(document.createTextNode(' · '),link);}}}
@@ -67,7 +77,7 @@ function ensureCanonical(){if(document.querySelector('link[rel="canonical"]'))re
 function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
 async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=20260820-optimized');await loadScript('site-images.js?v=20260820-optimized-3');}catch(error){console.warn('Managed page content could not load.',error);}}
 
-applyBrandLogo();ensureReviewsNavLinks();wireLegacyNavigation();wireRenderedNavigation();ensureAdminFooterLink();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();
+applyBrandLogo();ensureHeaderMotto();ensureReviewsNavLinks();wireLegacyNavigation();wireRenderedNavigation();ensureAdminFooterLink();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();
 
 const TURNSTILE_SITE_KEY='0x4AAAAAAEYPLMxpZZpCuQSS';
 const form=document.querySelector('[data-contact-form]');
