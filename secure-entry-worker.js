@@ -30,6 +30,13 @@ function isLoginPath(pathname){
   return pathname==='/api/admin/login'||pathname==='/api/admin/owner-login';
 }
 
+function legacyRedirect(pathname){
+  const normalized=pathname.replace(/\/+$/,'')||'/';
+  if(normalized==='/home')return '/';
+  if(normalized==='/about-us')return '/about.html';
+  return '';
+}
+
 async function limitAdminLogin(request,env,pathname){
   if(!env.ADMIN_LOGIN_RATE_LIMITER)return null;
   const ip=request.headers.get('cf-connecting-ip')||'unknown';
@@ -74,6 +81,15 @@ async function validateAdminImageUpload(request,url){
 export default {
   async fetch(request,env,ctx){
     const url=new URL(request.url);
+
+    if(request.method==='GET'||request.method==='HEAD'){
+      const destination=legacyRedirect(url.pathname);
+      if(destination){
+        const target=new URL(destination,url.origin);
+        target.search=url.search;
+        return Response.redirect(target.toString(),301);
+      }
+    }
 
     if(url.pathname==='/api/estimate-request')return handleEstimateRequest(request,env);
     if(url.pathname==='/api/debug-env')return new Response('Not found',{status:404,headers:{'cache-control':'no-store'}});
