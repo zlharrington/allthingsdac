@@ -69,4 +69,74 @@ async function loadManagedPageLayers(){try{await loadScript('site-content.js?v=2
 
 applyBrandLogo();ensureReviewsNavLinks();wireLegacyNavigation();wireRenderedNavigation();ensureAdminFooterLink();markCurrentPage();addMobileActionBar();improveImages();ensureCanonical();loadManagedPageLayers();
 
-const form=document.querySelector('[data-contact-form]');if(form){form.addEventListener('submit',async e=>{e.preventDefault();if(!form.reportValidity())return;const data=new FormData(form);const submit=form.querySelector('button[type="submit"]');const original=submit?.textContent;let feedback=form.querySelector('[data-estimate-feedback]');if(!feedback){feedback=document.createElement('p');feedback.setAttribute('data-estimate-feedback','');feedback.setAttribute('role','status');form.appendChild(feedback);}feedback.textContent='';if(submit){submit.disabled=true;submit.setAttribute('aria-busy','true');submit.textContent='Sending…';}try{const response=await fetch('/api/estimate-request',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:data.get('name')||'',phone:data.get('phone')||'',email:data.get('email')||'',message:data.get('message')||''})});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'We could not send your request right now.');form.reset();feedback.textContent='Thanks — your estimate request was sent successfully.';}catch(error){feedback.textContent=error instanceof Error?error.message:'We could not send your request right now. Please call or email us directly.';}finally{if(submit){submit.disabled=false;submit.setAttribute('aria-busy','false');submit.textContent=original||'Email Estimate Request';}}});}
+const TURNSTILE_SITE_KEY='0x4AAAAAAEYPLMxpZZpCuQSS';
+const form=document.querySelector('[data-contact-form]');
+if(form){
+  let turnstileToken='';
+  let turnstileWidgetId=null;
+
+  const honeypot=document.createElement('input');
+  honeypot.type='text';
+  honeypot.name='website';
+  honeypot.tabIndex=-1;
+  honeypot.autocomplete='off';
+  honeypot.setAttribute('aria-hidden','true');
+  honeypot.style.cssText='position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important;';
+  form.appendChild(honeypot);
+
+  const submit=form.querySelector('button[type="submit"]');
+  const turnstileContainer=document.createElement('div');
+  turnstileContainer.setAttribute('data-estimate-turnstile','');
+  turnstileContainer.style.margin='12px 0';
+  if(submit)form.insertBefore(turnstileContainer,submit);else form.appendChild(turnstileContainer);
+
+  loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit')
+    .then(()=>{
+      if(!window.turnstile)return;
+      turnstileWidgetId=window.turnstile.render(turnstileContainer,{
+        sitekey:TURNSTILE_SITE_KEY,
+        theme:'auto',
+        callback:token=>{turnstileToken=token;},
+        'expired-callback':()=>{turnstileToken='';},
+        'error-callback':()=>{turnstileToken='';}
+      });
+    })
+    .catch(error=>console.warn('Turnstile could not load.',error));
+
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!form.reportValidity())return;
+    const data=new FormData(form);
+    const button=form.querySelector('button[type="submit"]');
+    const original=button?.textContent;
+    let feedback=form.querySelector('[data-estimate-feedback]');
+    if(!feedback){feedback=document.createElement('p');feedback.setAttribute('data-estimate-feedback','');feedback.setAttribute('role','status');form.appendChild(feedback);}
+    feedback.textContent='';
+    if(!turnstileToken){feedback.textContent='Please complete the security verification and try again.';return;}
+    if(button){button.disabled=true;button.setAttribute('aria-busy','true');button.textContent='Sending…';}
+    try{
+      const response=await fetch('/api/estimate-request',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({
+          name:data.get('name')||'',
+          phone:data.get('phone')||'',
+          email:data.get('email')||'',
+          message:data.get('message')||'',
+          website:data.get('website')||'',
+          turnstileToken
+        })
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||'We could not send your request right now.');
+      form.reset();
+      feedback.textContent='Thanks — your estimate request was sent successfully.';
+    }catch(error){
+      feedback.textContent=error instanceof Error?error.message:'We could not send your request right now. Please call or email us directly.';
+    }finally{
+      turnstileToken='';
+      if(window.turnstile&&turnstileWidgetId!==null)window.turnstile.reset(turnstileWidgetId);
+      if(button){button.disabled=false;button.setAttribute('aria-busy','false');button.textContent=original||'Email Estimate Request';}
+    }
+  });
+}
