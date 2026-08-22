@@ -32,6 +32,14 @@
         "limit": 4,
         "period": 60
       }
+    },
+    {
+      "name": "ADMIN_LOGIN_RATE_LIMITER",
+      "namespace_id": "71841232",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
     }
   ],
   "observability": {
