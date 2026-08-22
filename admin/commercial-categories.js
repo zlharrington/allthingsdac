@@ -1,5 +1,5 @@
 (()=>{
-  const CATEGORIES={retail:'Retail',medical:'Medical','auto-dealerships':'Auto Dealerships',general:'General'};
+  const CATEGORIES={retail:'Retail',medical:'Medical','auto-dealerships':'Auto Dealerships',schools:'Schools',wineries:'Wineries',general:'General'};
   const projectType=document.getElementById('projectJobType');
   const categoryField=document.getElementById('commercialCategoryField');
   const categorySelect=document.getElementById('projectCommercialCategory');
