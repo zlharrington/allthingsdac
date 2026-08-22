@@ -2,8 +2,8 @@
   const root=document.getElementById('projectGalleryList');
   if(!root)return;
   const type=(root.dataset.jobType||'').toLowerCase();
-  const CATEGORY_ORDER=['retail','medical','auto-dealerships','general'];
-  const CATEGORY_LABELS={retail:'Retail',medical:'Medical','auto-dealerships':'Auto Dealerships',general:'General'};
+  const CATEGORY_ORDER=['retail','medical','auto-dealerships','schools','wineries','general'];
+  const CATEGORY_LABELS={retail:'Retail',medical:'Medical','auto-dealerships':'Auto Dealerships',schools:'Schools',wineries:'Wineries',general:'General'};
   const escapeHtml=value=>String(value||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   let activePhotos=[],activeIndex=0,lastTrigger=null;
   const lightbox=document.createElement('div');
