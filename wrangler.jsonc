@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "allthingsdac",
-  "main": "./entry-worker.js",
+  "main": "./secure-entry-worker.js",
   "compatibility_date": "2026-08-14",
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
@@ -22,6 +22,16 @@
     {
       "binding": "GALLERY_BUCKET",
       "bucket_name": "allthingsdac-gallery"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "ESTIMATE_RATE_LIMITER",
+      "namespace_id": "71841231",
+      "simple": {
+        "limit": 4,
+        "period": 60
+      }
     }
   ],
   "observability": {
